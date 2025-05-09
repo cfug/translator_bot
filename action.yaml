@@ -1,0 +1,91 @@
+name: 'cfug_translator_bot'
+description: ''
+author: 'AmosHuKe'
+branding:
+  icon: activity
+  color: blue
+inputs:
+  github_token:
+    description: 'Github Token with repo permissions'
+    required: true
+  gemini_api_key:
+    description: 'Google Gemini API Key'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Entry verification
+      id: entry
+      if: |
+        github.event_name == 'issue_comment' &&
+        !github.event.issue.pull_request &&
+        contains(fromJson('["member", "owner"]'), github.event.comment.author_association)
+      run: echo "valid=true" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Check out
+      if: steps.entry.outputs.valid == 'true'
+      uses: actions/checkout@v4
+
+    - name: Set GitHub Path
+      if: steps.entry.outputs.valid == 'true'
+      run: echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
+      shell: bash
+      env:
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+
+    - name: Check comment pattern and extract path
+      if: steps.entry.outputs.valid == 'true'
+      id: extract-comment
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ inputs.github_token }}
+        script: |
+          // 获取评论内容并清理格式
+          const rawComment = context.payload.comment.body;
+          const cleanComment = rawComment.trim();
+          
+          // 判断是否只有一行
+          const isSingleLine = !cleanComment.includes('\n');
+
+          if (!isSingleLine) {
+            core.setOutput('valid', 'false');
+            console.log('⏩ 非有效单行命令，跳过后续步骤');
+            return;
+          }
+          
+          // 单行命令 `/translator-bot <文件路径>`
+          // 允许 /translator-bot 后跟任意空格，捕获路径部分
+          const pattern = /^\/translator-bot\s+(\S+)$/;
+          const match = cleanComment.match(pattern);
+
+          if (match && match[1]) {
+            core.setOutput('valid', 'true');
+            // 输出提取的路径到 Action 变量
+            core.setOutput('file_path', match[1]);
+            console.log(`✅ 提取评论成功，文件路径: ${match[1]}`);
+          } else {
+            core.setOutput('valid', 'false');
+            console.log('⏩ 没有匹配，跳过后续步骤');
+          }
+
+    - if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
+      uses: dart-lang/setup-dart@v1
+      with:
+        sdk: '3.7'
+    - name: Prepare dependencies
+      if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
+      run: |
+        cd ${{ github.action_path }}
+        dart --version
+        dart pub get
+      shell: bash
+
+    - name: Run bot
+      if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        GEMINI_API_KEY: ${{ inputs.gemini_api_key }}
+      run: |
+        dart ${{ github.action_path }}/bin/translator.dart --repository ${{ github.repository }} --actionId ${{ github.run_id }} --issueId ${{ github.event.issue.number }} --commentId ${{ github.event.comment.id }} --filePath ${{ steps.extract-comment.outputs.file_path }}
+      shell: bash
