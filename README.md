@@ -36,6 +36,13 @@
 
 ### 本地调试
 
+在根目录新建 `.env` 文件（注意不要上传到公共环境），并添加以下内容：
+```
+GH_TOKEN = xxxxxxx
+GEMINI_API_KEY = xxxxxxx
+```
+
+调用以下指令：
 ```bash
-$ dart bin/translator.dart dry-run --repository username/repo --actionId xxx --issueId xxx --commentId xxx --filePath xxx
+$ dart bin/translator.dart --dry-run --repository username/repo --actionId 0 --issueId 0 --commentId 0 --filePath xxxxxx
 ```

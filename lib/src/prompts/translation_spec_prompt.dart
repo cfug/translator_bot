@@ -6,11 +6,10 @@
 ///
 final translationSpecPrompt =
     '''
-以下每项规则，你应全部结合综合考虑。
-
 ### 顶部元数据
 [规则]:
-原始内容顶部的元数据在 "---" 内，应注释原始行，并紧接着进行翻译，翻译应保留元数据属性。
+原始内容顶部的元数据在 "---" 内，
+需要先用 "#" 注释需要翻译的原始元数据属性行，并紧接着在下一行进行翻译，翻译应保留元数据属性。
 
 以下给你提供一些示例：
 <EXAMPLE>
@@ -160,18 +159,50 @@ or you can build your own set of custom widgets.
 ```
 </EXAMPLE>
 
+<EXAMPLE>
+[输入的原文片段]:
+```
+### Start with a Row and some children {:#xxx}
+
+#### Code example
+
+Below is a widget called `MyWidget` that builds a single `Row`.
+Try adding three `BlueBox` widgets to its list of children.
+```
+
+[应对原文输出的片段]:
+```
+### Start with a Row and some children {:#xxx}
+
+### 从一个 Row 和一些 children 开始
+
+#### Code example
+
+#### 代码示例
+
+Below is a widget called `MyWidget` that builds a single `Row`.
+Try adding three `BlueBox` widgets to its list of children.
+
+下面是一个叫作 `MyWidget` 的 widget，在其内部创建了一个 `Row`。
+然后请试着将三个 `BlueBox` widget 添加到 `Row` 的 children 中。
+
+```
+</EXAMPLE>
+
 ### markdown 列表语法（"-"、"*"、"1. " 等）
 [规则]:
-列表语法的每个项应作为单独的原文段落，应将每个项的译文放在对应原文项的下方，
 原文项与译文项之间应空一行，译文项下方应空一行，译文项应与后方的原文项保持一行的距离，
-译文项应避免书写原文项的列表语法符号，译文项应通过缩进与原文项的内容进行对齐。
+译文项应避免书写原文项的列表语法符号，译文项应通过缩进与原文项的内容进行对齐，
+不要改变原文项的列表语法符号。
 
 以下给你提供一些示例：
 <EXAMPLE>
 [输入的原文片段]:
 ```
 - one
+
 - two
+
 - three
 ```
 
@@ -196,7 +227,9 @@ or you can build your own set of custom widgets.
 [输入的原文片段]:
 ```
 * one
+
 * two
+
 * three
 ```
 
@@ -215,16 +248,58 @@ or you can build your own set of custom widgets.
   三
 
 ```
+</EXAMPLE>
 
-[应避免对原文输出的片段]:
+<EXAMPLE>
+[输入的原文片段]:
 ```
-* one
-* two
-* three
+1. one
 
-* 一
-* 二
-* 三
+2. two
+
+3. three
+```
+
+[应对原文输出的片段]:
+```
+1. one
+
+  一
+
+2. two
+
+  二
+
+3. three
+
+  三
+
+```
+</EXAMPLE>
+
+<EXAMPLE>
+[输入的原文片段]:
+```
+1. one
+
+1. two
+
+1. three
+```
+
+[应对原文输出的片段]:
+```
+1. one
+
+  一
+
+1. two
+
+  二
+
+1. three
+
+  三
 
 ```
 </EXAMPLE>
@@ -236,15 +311,18 @@ or you can build your own set of custom widgets.
   the widget tree, preserving the app state;
   it doesn't rerun `main()` or `initState()`.
   (`⌘` in Intellij and Android Studio, `⌃F5` in VSCode)
+
 * **Hot restart** loads code changes into the VM,
   and restarts the Flutter app, losing the app state.
   (`⇧⌘` in IntelliJ and Android Studio, `⇧⌘F5` in VSCode)
+
 * **Full restart** restarts the iOS, Android, or web app.
   This takes longer because it also recompiles the
   Java / Kotlin / Objective-C / Swift code. On the web,
   it also restarts the Dart Development Compiler.
   There is no specific keyboard shortcut for this;
   you need to stop and start the run configuration.
+
 ```
 
 [应对原文输出的片段]:
@@ -280,40 +358,11 @@ or you can build your own set of custom widgets.
 
 ```
 
-[应避免对原文输出的片段]:
-```
-* **Hot reload** loads code changes into the VM and re-builds
-  the widget tree, preserving the app state;
-  it doesn't rerun `main()` or `initState()`.
-  (`⌘` in Intellij and Android Studio, `⌃F5` in VSCode)
-* **Hot restart** loads code changes into the VM,
-  and restarts the Flutter app, losing the app state.
-  (`⇧⌘` in IntelliJ and Android Studio, `⇧⌘F5` in VSCode)
-* **Full restart** restarts the iOS, Android, or web app.
-  This takes longer because it also recompiles the
-  Java / Kotlin / Objective-C / Swift code. On the web,
-  it also restarts the Dart Development Compiler.
-  There is no specific keyboard shortcut for this;
-  you need to stop and start the run configuration.
-
-* **热重载** 会将代码更改转入 VM，重建 widget 树并保持应用的状态，
-  整个过程不会重新运行 `main()` 或者 `initState()`。
-  （在 IDEA 中的快捷键是 `⌘`，在 VSCode 中是 `⌃F5`）
-* **热重启** 会将代码更改转入 VM，重启 Flutter 应用，不保留应用状态。
-  （在 IDEA 中的快捷键是 `⇧⌘`，在 VSCode 中是 `⇧⌘F5`）
-* **完全重启** 将会完全重新运行应用。
-  该进程较为耗时，因为它会重新编译原生部分
-  (Java / Kotlin / Objective-C / Swift) 代码。
-  在 Web 平台上，它同时会重启 Dart 开发编译器。
-  完全重启并没有既定的快捷键，你需要手动停止后重新运行。
-
-```
-</EXAMPLE>
-
 <EXAMPLE>
 [输入的原文片段]:
 ```
 * [Layout tutorial][]
+
 * [Widget catalog][]
 ```
 
@@ -329,25 +378,18 @@ or you can build your own set of custom widgets.
 
 ```
 
-[应避免对原文输出的片段]:
-```
-* [Layout tutorial][]
-* [Widget catalog][]
-
-* [Layout 教程][Layout tutorial]
-* [核心 Widget 目录][Widget catalog]
-
-```
-</EXAMPLE>
-
 <EXAMPLE>
 [输入的原文片段]:
 ```
 * Lays widgets out in a grid
+
 * Detects when the column content exceeds the render box
   and automatically provides scrolling
+
 * Build your own custom grid, or use one of the provided grids:
+
   * `GridView.count` allows you to specify the number of columns
+
   * `GridView.extent` allows you to specify the maximum pixel
   width of a tile
 ```
@@ -377,24 +419,6 @@ or you can build your own set of custom widgets.
     `GridView.extent` 允许你制定单元格的最大宽度
 
 ```
-
-[应避免对原文输出的片段]:
-```
-* Lays widgets out in a grid
-* Detects when the column content exceeds the render box
-  and automatically provides scrolling
-* Build your own custom grid, or use one of the provided grids:
-  * `GridView.count` allows you to specify the number of columns
-  * `GridView.extent` allows you to specify the maximum pixel
-  width of a tile
-
-* 在网格中使用 widget
-* 当列的内容超出渲染容器的时候，它会自动支持滚动。
-* 创建自定义的网格，或者使用下面提供的网格的其中一个：
-  * `GridView.count` 允许你制定列的数量
-  * `GridView.extent` 允许你制定单元格的最大宽度
-```
-</EXAMPLE>
 
 ### 表格 - 表头
 [规则]:
@@ -959,10 +983,6 @@ from the command line, or see the [dart tool][] page.
 ```
 ```
 </EXAMPLE>
-
-### 「您」和「你」的用法
-[规则]:
-在文档的翻译中应避免使用「您」，应只使用「你」，以表示与开发者平等沟通的意味。
 
 ### 特殊情况1
 [规则]:

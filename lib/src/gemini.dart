@@ -11,7 +11,12 @@ class GeminiService {
         model: translatorModel,
         apiKey: apiKey,
         systemInstruction: Content.system(translatorPrompt),
-        generationConfig: GenerationConfig(temperature: 0, topP: 0),
+        generationConfig: GenerationConfig(
+          maxOutputTokens: 8192,
+          temperature: 0,
+          topP: 0,
+          responseMimeType: 'text/plain',
+        ),
         httpClient: httpClient,
       );
 

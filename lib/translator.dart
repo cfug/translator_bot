@@ -4,6 +4,7 @@ import 'package:github/github.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 import 'src/common.dart';
+import 'src/reformat.dart';
 import 'src/gemini.dart';
 import 'src/github.dart';
 
@@ -163,7 +164,7 @@ class Translator {
     }
 
     /// 文件内容
-    final fileText = fileContents.file!.text;
+    final String fileText = Reformat(fileContents.file!.text).all();
 
     /// 已翻译的文本
     String translatedText;
