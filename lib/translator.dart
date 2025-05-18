@@ -4,7 +4,6 @@ import 'package:github/github.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 import 'src/common.dart';
-import 'src/reformat.dart';
 import 'src/gemini.dart';
 import 'src/github.dart';
 
@@ -164,7 +163,7 @@ class Translator {
     }
 
     /// 文件内容
-    final String fileText = Reformat(fileContents.file!.text).all();
+    final String fileText = fileContents.file!.text;
 
     /// 已翻译的文本
     String translatedText;
@@ -201,10 +200,10 @@ class Translator {
     logger.log('------ Translated Text ------');
     final translatedTextLines =
         translatedText.split('\n').where((l) => l.trim().isNotEmpty).toList();
-    for (final line in translatedTextLines.take(6)) {
+    for (final line in translatedTextLines.take(15)) {
       logger.log(line);
     }
-    if (translatedTextLines.length > 6) {
+    if (translatedTextLines.length > 15) {
       logger.log('...');
     }
     logger.log('-----------------------------');

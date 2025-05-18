@@ -2,6 +2,7 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:http/http.dart' as http;
 
 import 'prompts/prompts.dart';
+import 'text_chunk_translate.dart';
 
 class GeminiService {
   GeminiService({required String apiKey, required http.Client httpClient})
@@ -20,20 +21,13 @@ class GeminiService {
         httpClient: httpClient,
       );
 
-  static const String translatorModel = 'models/gemini-2.0-flash';
-  static const String startText = '准备完成';
-  static const String stopText = '全部输出完毕';
+  static const String translatorModel = 'models/gemini-2.0-flash-lite';
 
   final GenerativeModel _translatorModel;
 
-  /// 调用 translator 的 prompt
+  /// 调用 translator 分块处理
   ///
-  /// 捕获异常: [GenerativeAIException].
-  Future<String> translator(String prompt) {
-    return _query(_translatorModel, prompt);
-  }
-
-  /// 调用 translator 分块处理的 prompt
+  /// - [text] 需要处理的内容
   ///
   /// 捕获异常: [GenerativeAIException].
   ///
@@ -41,53 +35,21 @@ class GeminiService {
   /// - [outputText] 全部输出内容
   /// - [totalTokenCount] 当前消耗的总 Token
   Future<({String outputText, int totalTokenCount})?> translatorChunk(
-    String prompt,
-  ) {
-    return _queryChunk(_translatorModel, prompt);
-  }
-
-  /// 单次输出
-  Future<String> _query(GenerativeModel model, String prompt) async {
-    final response = await model.generateContent([Content.text(prompt)]);
-    return (response.text ?? '').trim();
-  }
-
-  /// 分块输出
-  ///
-  /// @return
-  /// - [outputText] 全部输出内容
-  /// - [totalTokenCount] 当前消耗的总 Token
-  Future<({String outputText, int totalTokenCount})?> _queryChunk(
-    GenerativeModel model,
-    String prompt,
+    String text,
   ) async {
-    var text = '';
-    final chat = model.startChat();
+    /// 开始处理
+    final chat = _translatorModel.startChat();
 
-    /// 开始输出
-    final responseStart = await chat.sendMessage(Content.text(prompt));
-    if (responseStart.text?.trim() != startText) {
-      return null;
-    }
+    /// 分块翻译
+    final outputText = await TextChunkTranslate(chat, text).run();
 
-    const maxChunk = 50;
-    for (var i = 1; i <= maxChunk; i++) {
-      print('💬 正在输出: 第 $i 分块');
-      final responseNext = await chat.sendMessage(
-        Content.text(chunkNextPrompt),
-      );
-      print('✅ 完成输出: 第 $i 分块');
-      final textNext = responseNext.text ?? '';
-      if (textNext.trim() == stopText) {
-        break;
-      }
-      text += textNext;
-    }
-
-    final countTokensResponse = await model.countTokens(chat.history);
+    /// 总消耗 Token
+    final countTokensResponse = await _translatorModel.countTokens(
+      chat.history,
+    );
 
     return (
-      outputText: text.trim(),
+      outputText: outputText,
       totalTokenCount: countTokensResponse.totalTokens,
     );
   }
