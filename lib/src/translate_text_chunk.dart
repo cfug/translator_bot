@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:uuid/uuid.dart';
 
 import 'reformat.dart';
 
@@ -71,9 +74,9 @@ enum TextStructureType {
   htmlTag,
 }
 
-class TextChunkTranslate {
+class TranslateTextChunk {
   /// 文本分块翻译处理
-  TextChunkTranslate(this.chat, this.text);
+  TranslateTextChunk(this.chat, this.text);
 
   /// 模型会话
   final ChatSession chat;
@@ -81,20 +84,17 @@ class TextChunkTranslate {
   /// 需要处理的原始内容
   final String text;
 
-  /// 翻译修改后的行内容
+  /// 翻译 ID 占位修改后的行内容
   final List<String> modifiedLines = [];
+
+  /// 翻译 ID 占位块的数据
+  final List<TranslationChunk> translationChunkList = [];
 
   Future<String> run() async {
     final content = Reformat(text).all();
     final textStructureList = _parseTextStructure(content);
-    await _translateTextStructure(textStructureList);
-    return modifiedLines.join('\n');
-  }
-
-  /// 翻译
-  Future<String> _fetchTranslate(String content) async {
-    final translatedResponse = await chat.sendMessage(Content.text(content));
-    final translatedText = translatedResponse.text?.trim() ?? '';
+    _chunkTextStructure(textStructureList);
+    final translatedText = await _translateChunkTextStructure() ?? text;
     return translatedText;
   }
 
@@ -489,37 +489,9 @@ class TextChunkTranslate {
     return textStructureList;
   }
 
-  /// 翻译文本结构
+  /// 分块文本结构（翻译 ID 占位）
   /// - [textStructureList] 整篇文本结构
-  Future<void> _translateTextStructure(
-    List<TextStructure> textStructureList,
-  ) async {
-    /// 最大请求数量限制
-    const maxRequestLimit = 15;
-    const stopRequestDuration = Duration(minutes: 1);
-    var requestCount = 0;
-    var chunkTotal = 0;
-
-    /// 预计请求翻译数量
-    var estimatedRequestCount = 0;
-    for (var i = 0; i < textStructureList.length; i++) {
-      final textStructure = textStructureList[i];
-      final textStructureType = textStructure.type;
-      switch (textStructureType) {
-        case TextStructureType.topMetadata ||
-            TextStructureType.paragraph ||
-            TextStructureType.markdownTitle ||
-            TextStructureType.markdownListItem ||
-            TextStructureType.markdownCustomAsideTypeTitle ||
-            TextStructureType.liquid1:
-          estimatedRequestCount++;
-        case _:
-      }
-    }
-    print(
-      '🚀 开始分块翻译 - 预计消耗时间：${estimatedRequestCount ~/ maxRequestLimit * stopRequestDuration.inMinutes} 分钟',
-    );
-
+  void _chunkTextStructure(List<TextStructure> textStructureList) {
     for (var i = 0; i < textStructureList.length; i++) {
       final textStructure = textStructureList[i];
       final textStructureType = textStructure.type;
@@ -528,59 +500,41 @@ class TextChunkTranslate {
 
       switch (textStructureType) {
         case TextStructureType.topMetadata:
-          requestCount++;
-          await _translateTopMetadata(textStructure);
+          _chunkTopMetadata(textStructure);
         case TextStructureType.paragraph:
-          requestCount++;
-          await _translateMarkdownParagraph(textStructure);
+          _chunkMarkdownParagraph(textStructure);
           if (textStructureNext != null &&
               textStructureNext.type != TextStructureType.blankLine) {
             modifiedLines.add('');
           }
         case TextStructureType.markdownTitle:
-          requestCount++;
-          await _translateMarkdownTitle(textStructure);
+          _chunkMarkdownTitle(textStructure);
           if (textStructureNext != null &&
               textStructureNext.type != TextStructureType.blankLine) {
             modifiedLines.add('');
           }
         case TextStructureType.markdownListItem:
-          requestCount++;
-          await _translateMarkdownListItem(textStructure);
+          _chunkMarkdownListItem(textStructure);
           if (textStructureNext != null &&
               textStructureNext.type != TextStructureType.blankLine) {
             modifiedLines.add('');
           }
         case TextStructureType.markdownCustomAsideTypeTitle:
-          requestCount++;
-          await _translateMarkdownCustomAsideTypeTitle(textStructure);
+          _chunkMarkdownCustomAsideTypeTitle(textStructure);
           if (textStructureNext != null &&
               textStructureNext.type != TextStructureType.blankLine) {
             modifiedLines.add('');
           }
         case TextStructureType.liquid1:
-          requestCount++;
-          await _translateLiquidTab(textStructure);
-          if (textStructureNext != null &&
-              textStructureNext.type != TextStructureType.blankLine) {
-            modifiedLines.add('');
-          }
+          _chunkLiquidTab(textStructure);
         case _:
           modifiedLines.addAll(textStructure.originalText);
-      }
-
-      /// 避免触发 API 请求最大限制（达到数量就暂停 1 分钟）
-      if (requestCount >= maxRequestLimit) {
-        chunkTotal++;
-        print('📄 已处理翻译第 $chunkTotal 批（$maxRequestLimit 分块/批）');
-        requestCount = 0;
-        await Future.delayed(stopRequestDuration);
       }
     }
   }
 
-  /// 翻译顶部元数据
-  Future<void> _translateTopMetadata(TextStructure textStructure) async {
+  /// 分块顶部元数据（翻译 ID 占位）
+  void _chunkTopMetadata(TextStructure textStructure) {
     final lines = textStructure.originalText;
 
     /// 当前正在识别的元数据属性名称
@@ -608,7 +562,7 @@ class TextChunkTranslate {
 
       /// 顶部元数据内容
       final metadataLine = line.split(':');
-      final metadataName = metadataLine[0].trim();
+      final metadataName = metadataLine[0];
 
       /// 当前行存在属性
       if (metadataLine.length >= 2) {
@@ -621,12 +575,16 @@ class TextChunkTranslate {
         }
 
         /// 处理指定属性
-        if (['title', 'short-title', 'description'].contains(metadataName)) {
+        if ([
+          'title',
+          'short-title',
+          'description',
+        ].any((value) => metadataName.trim() == value)) {
           /// 注释行
           modifiedLines.add('# $line');
 
           /// 标注当前行
-          currentMetadataLineName = metadataLine[0];
+          currentMetadataLineName = metadataName;
           if (metadataValue.startsWith('>-')) {
             currentMetadataLineValue.add(metadataValue.substring(2));
           } else if (metadataValue.startsWith('>')) {
@@ -643,6 +601,8 @@ class TextChunkTranslate {
           /// 注释行
           modifiedLines.add('# $line');
           currentMetadataLineValue.add(line.trim());
+        } else {
+          modifiedLines.add(line);
         }
       }
 
@@ -650,11 +610,18 @@ class TextChunkTranslate {
       final metadataLineNext = lineNext?.split(':') ?? [];
       if ((metadataLineNext.length >= 2 || lineNext?.trim() == '---') &&
           currentMetadataLineName != null) {
-        /// 当前已存在属性，进行翻译处理
-        final translatedText = await _fetchTranslate(
-          currentMetadataLineValue.join(''),
+        /// 翻译块 ID
+        final translationChunkId = _translationChunkId();
+
+        /// 当前已存在属性，进行翻译块 ID 占位
+        translationChunkList.add(
+          TranslationChunk(
+            id: translationChunkId,
+            indentCount: 0,
+            text: currentMetadataLineValue.join(''),
+          ),
         );
-        modifiedLines.add('$currentMetadataLineName: $translatedText');
+        modifiedLines.add('$currentMetadataLineName: $translationChunkId');
 
         /// 清理标注
         currentMetadataLineName = null;
@@ -663,8 +630,8 @@ class TextChunkTranslate {
     }
   }
 
-  /// 翻译段落
-  Future<void> _translateMarkdownParagraph(TextStructure textStructure) async {
+  /// 分块段落（翻译 ID 占位）
+  void _chunkMarkdownParagraph(TextStructure textStructure) {
     var lines = textStructure.originalText;
 
     /// 处理 `:` 开头的情况
@@ -681,25 +648,24 @@ class TextChunkTranslate {
     if (lines.isNotEmpty) {
       final content = lines.join('\n');
 
-      /// 翻译原始内容
-      final translatedText = await _fetchTranslate(content);
+      /// 翻译块 ID
+      final translationChunkId = _translationChunkId();
 
-      /// 添加翻译内容
-      if (translatedText != '' && translatedText != content.trim()) {
-        modifiedLines.add('');
-
-        /// 添加缩进
-        modifiedLines.addAll(
-          translatedText
-              .split('\n')
-              .map((line) => '${_indentText(lines[0])}${line.trim()}'),
-        );
-      }
+      /// 添加翻译块 ID 占位
+      translationChunkList.add(
+        TranslationChunk(
+          id: translationChunkId,
+          indentCount: _indentCount(lines[0]),
+          text: content,
+        ),
+      );
+      modifiedLines.add('');
+      modifiedLines.add(translationChunkId);
     }
   }
 
-  /// 翻译标题
-  Future<void> _translateMarkdownTitle(TextStructure textStructure) async {
+  /// 分块标题（翻译 ID 占位）
+  void _chunkMarkdownTitle(TextStructure textStructure) {
     final lines = textStructure.originalText;
 
     /// 添加原始内容
@@ -715,22 +681,25 @@ class TextChunkTranslate {
         final titleText = markdownTitleMatch.group(2);
         if (titlePrefix == null || titleText == null) return;
 
-        /// 翻译原始内容
-        final translatedText = await _fetchTranslate(titleText);
+        /// 翻译块 ID
+        final translationChunkId = _translationChunkId();
 
-        /// 添加翻译内容
-        if (translatedText != '' && translatedText != titleText.trim()) {
-          modifiedLines.add('');
-
-          /// 添加前缀
-          modifiedLines.add('$titlePrefix $translatedText');
-        }
+        /// 添加翻译块 ID 占位
+        translationChunkList.add(
+          TranslationChunk(
+            id: translationChunkId,
+            indentCount: 0,
+            text: titleText,
+          ),
+        );
+        modifiedLines.add('');
+        modifiedLines.add('$titlePrefix $translationChunkId');
       }
     }
   }
 
-  /// 翻译列表项
-  Future<void> _translateMarkdownListItem(TextStructure textStructure) async {
+  /// 分块列表项（翻译 ID 占位）
+  void _chunkMarkdownListItem(TextStructure textStructure) {
     final lines = textStructure.originalText;
 
     /// 添加原始内容
@@ -741,40 +710,39 @@ class TextChunkTranslate {
       final markdownListItemMatch = markdownListItemRegex.firstMatch(lines[0]);
       if (markdownListItemMatch != null) {
         final listItemPrefix = markdownListItemMatch.group(1);
-        final listItemText = markdownListItemMatch.group(2);
-        if (listItemPrefix == null || listItemText == null) return;
+        final listItemTextFirstLine = markdownListItemMatch.group(2);
+        if (listItemPrefix == null || listItemTextFirstLine == null) return;
 
         /// 翻译原始内容
         final content =
-            '$listItemText\n${lines.where((value) => value != lines[0]).join('\n')}';
-        final translatedText = await _fetchTranslate(content);
+            '$listItemTextFirstLine\n${lines.where((value) => value != lines[0]).join('\n')}';
 
-        /// 添加翻译内容
-        if (translatedText != '' && translatedText != content.trim()) {
-          modifiedLines.add('');
+        /// 翻译块 ID
+        final translationChunkId = _translationChunkId();
 
-          /// 添加前缀
-          modifiedLines.addAll(
-            translatedText
-                .split('\n')
-                .map((line) => '${' ' * listItemPrefix.length} ${line.trim()}'),
-          );
-        }
+        /// 添加翻译块 ID 占位
+        translationChunkList.add(
+          TranslationChunk(
+            id: translationChunkId,
+            indentCount: listItemPrefix.length + 1,
+            text: content,
+          ),
+        );
+        modifiedLines.add('');
+        modifiedLines.add(translationChunkId);
       }
     }
   }
 
-  /// 翻译 Markdown 自定义 aside/admonition 语法（存在类型、标题）
-  Future<void> _translateMarkdownCustomAsideTypeTitle(
-    TextStructure textStructure,
-  ) async {
+  /// 分块 Markdown 自定义 aside/admonition 语法（存在类型、标题）
+  void _chunkMarkdownCustomAsideTypeTitle(TextStructure textStructure) {
     final lines = textStructure.originalText;
     if (lines.isNotEmpty) {
       final content = lines[0];
 
       /// 添加注释原始内容
       modifiedLines.add(
-        '${_indentText(content)}<!-- ${content.trimLeft()} -->',
+        '${" " * _indentCount(content)}<!-- ${content.trimLeft()} -->',
       );
 
       /// `:::类型 标题`
@@ -788,23 +756,27 @@ class TextChunkTranslate {
         final title = match.group(3)?.trim() != '' ? match.group(3) : null;
 
         if (type != null && title != null) {
-          /// 翻译原始内容
-          final translatedText = await _fetchTranslate(title.trim());
+          /// 翻译块 ID
+          final translationChunkId = _translationChunkId();
 
-          /// 添加翻译内容
-          if (translatedText != '' && translatedText != title.trim()) {
-            /// 添加缩进
-            modifiedLines.add(
-              '${_indentText(content)}$delimiter$type ${translatedText.trim()}',
-            );
-          }
+          /// 添加翻译块 ID 占位
+          translationChunkList.add(
+            TranslationChunk(
+              id: translationChunkId,
+              indentCount: 0,
+              text: title,
+            ),
+          );
+          modifiedLines.add(
+            '${" " * _indentCount(content)}$delimiter$type $translationChunkId',
+          );
         }
       }
     }
   }
 
-  /// 翻译 Liquid `{% tab "标题" %}` 语法
-  Future<void> _translateLiquidTab(TextStructure textStructure) async {
+  /// 分块 Liquid `{% tab "标题" %}` 语法
+  void _chunkLiquidTab(TextStructure textStructure) {
     final lines = textStructure.originalText;
     if (lines.isNotEmpty) {
       final content = lines[0];
@@ -813,7 +785,7 @@ class TextChunkTranslate {
       if (content.trimLeft().startsWith('{% tab ')) {
         /// 添加注释原始内容
         modifiedLines.add(
-          '${_indentText(content)}<!-- ${content.trimLeft()} -->',
+          '${" " * _indentCount(content)}<!-- ${content.trimLeft()} -->',
         );
 
         /// `{% tab "标题" %}`
@@ -823,17 +795,21 @@ class TextChunkTranslate {
           final title = match!.group(1)!;
 
           if (title.trim() != '') {
-            /// 翻译原始内容
-            final translatedText = await _fetchTranslate(title.trim());
+            /// 翻译块 ID
+            final translationChunkId = _translationChunkId();
 
-            /// 添加翻译内容
-            if (translatedText != '' && translatedText != title.trim()) {
-              /// 添加缩进
-              modifiedLines.add(
-                '${_indentText(content)}{% tab "${translatedText.trim()}" %}',
-              );
-              return;
-            }
+            /// 添加翻译块 ID 占位
+            translationChunkList.add(
+              TranslationChunk(
+                id: translationChunkId,
+                indentCount: 0,
+                text: title.trim(),
+              ),
+            );
+            modifiedLines.add(
+              '${" " * _indentCount(content)}{% tab "$translationChunkId" %}',
+            );
+            return;
           }
         }
       }
@@ -841,14 +817,88 @@ class TextChunkTranslate {
     }
   }
 
-  /// 缩进
+  /// 翻译分块的文本结构
+  ///
+  /// @return 翻译完成的内容，`null`: 翻译为空
+  Future<String?> _translateChunkTextStructure() async {
+    /// 最大输入计数（防止输出超出限制）
+    const maxInputCount = 10 * 1024;
+    final inputChunkTextList = <String>[];
+
+    /// 处理成 AI 需要输入的格式内容
+    var chunkText = '';
+    for (var i = 0; i < translationChunkList.length; i++) {
+      final translationChunk = translationChunkList[i];
+      chunkText +=
+          '<INPUT>\n'
+          'id: ${translationChunk.id}\n'
+          'indentCount: ${translationChunk.indentCount}\n'
+          'text:\n'
+          '${translationChunk.text}\n'
+          '</INPUT>\n'
+          '\n';
+
+      /// 分段输入
+      if (chunkText.length >= maxInputCount ||
+          i == translationChunkList.length - 1) {
+        if (chunkText != '') {
+          inputChunkTextList.add(chunkText);
+
+          /// 清理
+          chunkText = '';
+        }
+      }
+    }
+
+    if (inputChunkTextList.isNotEmpty) {
+      /// 已翻译完成的分块数据
+      final List<TranslationChunk> translatedChunkList = [];
+
+      /// 开始翻译
+      for (var i = 0; i < inputChunkTextList.length; i++) {
+        print('📄 开始翻译第 ${i + 1} 批数据');
+        final inputChunkText = inputChunkTextList[i];
+
+        /// TODO: 限制最多请求 10 次就暂停 1 分钟
+        final translatedResponse = await chat.sendMessage(
+          Content.text(inputChunkText),
+        );
+        final translatedText = translatedResponse.text?.trim() ?? '';
+        if (translatedText != '') {
+          final List<dynamic> translatedJsonList = jsonDecode(translatedText);
+          for (final translatedJson in translatedJsonList) {
+            translatedChunkList.add(TranslationChunk.fromJson(translatedJson));
+          }
+        }
+        print('✅ 已翻译第 ${i + 1} 批数据');
+      }
+
+      /// 将翻译替换至原文
+      var modifiedText = modifiedLines.join('\n');
+      for (final translatedChunk in translatedChunkList) {
+        modifiedText = modifiedText.replaceAll(
+          translatedChunk.id,
+          translatedChunk.text
+              .split('\n')
+              .map((line) => '${" " * translatedChunk.indentCount}$line')
+              .join('\n'),
+        );
+      }
+      return modifiedText;
+    }
+    return null;
+  }
+
+  /// 生成翻译块 ID
+  String _translationChunkId() => '#{TranslationChunkId-${const Uuid().v7()}}#';
+
+  /// 缩进计数
   /// - [content] 获取文本缩进内容
-  String _indentText(String content) {
+  int _indentCount(String content) {
     final regex = RegExp(r'^ *');
     final match = regex.firstMatch(content);
     final indentCount = match?.end ?? 0;
-    final indent = ' ' * indentCount;
-    return indent;
+    return indentCount;
   }
 }
 
@@ -909,4 +959,64 @@ class TextStructure {
 
   @override
   int get hashCode => Object.hashAll([type, start, end, originalText]);
+}
+
+/// 翻译块数据
+class TranslationChunk {
+  const TranslationChunk({
+    required this.id,
+    required this.indentCount,
+    required this.text,
+  });
+
+  factory TranslationChunk.fromJson(Map json) {
+    return TranslationChunk(
+      id: json['id'],
+      indentCount: json['indentCount'],
+      text: json['text'],
+    );
+  }
+
+  /// 翻译块 ID
+  ///
+  /// 用于替换原文翻译占位的 ID
+  final String id;
+
+  /// 缩进计数
+  final int indentCount;
+
+  /// 内容（需要翻译、已翻译）
+  final String text;
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'indentCount': indentCount, 'text': text};
+  }
+
+  TranslationChunk copyWith({String? id, String? text, int? indentCount}) {
+    return TranslationChunk(
+      id: id ?? this.id,
+      indentCount: indentCount ?? this.indentCount,
+      text: text ?? this.text,
+    );
+  }
+
+  @override
+  String toString() =>
+      '\nTranslationChunk(\n'
+      '  id: $id,\n'
+      '  indentCount: $indentCount,\n'
+      '  text: $text,\n'
+      ')';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TranslationChunk &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          indentCount == other.indentCount &&
+          text == other.text;
+
+  @override
+  int get hashCode => Object.hashAll([id, indentCount, text]);
 }

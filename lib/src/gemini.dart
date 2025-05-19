@@ -2,26 +2,24 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:http/http.dart' as http;
 
 import 'prompts/prompts.dart';
-import 'text_chunk_translate.dart';
+import 'translate_text_chunk.dart';
 
 class GeminiService {
   GeminiService({required String apiKey, required http.Client httpClient})
     : _translatorModel = GenerativeModel(
-        // TODO(Amos): 之后也许可以换成微调后的模型、
-        //             Gemini 1.5 Pro、Gemini 2.5 Pro 效果不错
         model: translatorModel,
         apiKey: apiKey,
         systemInstruction: Content.system(translatorPrompt),
         generationConfig: GenerationConfig(
           maxOutputTokens: 8192,
-          temperature: 0,
-          topP: 0,
-          responseMimeType: 'text/plain',
+          temperature: 0.5,
+          topP: 0.5,
+          responseMimeType: 'application/json',
         ),
         httpClient: httpClient,
       );
 
-  static const String translatorModel = 'models/gemini-2.0-flash-lite';
+  static const String translatorModel = 'models/gemini-2.0-flash';
 
   final GenerativeModel _translatorModel;
 
@@ -41,13 +39,12 @@ class GeminiService {
     final chat = _translatorModel.startChat();
 
     /// 分块翻译
-    final outputText = await TextChunkTranslate(chat, text).run();
+    final outputText = await TranslateTextChunk(chat, text).run();
 
     /// 总消耗 Token
     final countTokensResponse = await _translatorModel.countTokens(
       chat.history,
     );
-
     return (
       outputText: outputText,
       totalTokenCount: countTokensResponse.totalTokens,
