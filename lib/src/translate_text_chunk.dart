@@ -833,8 +833,7 @@ class TranslateTextChunk {
           '<INPUT>\n'
           'id: ${translationChunk.id}\n'
           'indentCount: ${translationChunk.indentCount}\n'
-          'text:\n'
-          '${translationChunk.text}\n'
+          'text: ${translationChunk.text.split('\n').join('\\n')}\n'
           '</INPUT>\n'
           '\n';
 
@@ -879,6 +878,7 @@ class TranslateTextChunk {
         modifiedText = modifiedText.replaceAll(
           translatedChunk.id,
           translatedChunk.text
+              .trim()
               .split('\n')
               .map((line) => '${" " * translatedChunk.indentCount}$line')
               .join('\n'),

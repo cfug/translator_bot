@@ -28,11 +28,11 @@ text:
 </INPUT>
 ```
 你应按照规则翻译 "text" 中的内容，保留 "id" 原始内容，保留 "indentCount" 原始内容，并输出以下 json 格式：
-```
+```json
 [{
-id: 原始 ID,
-indentCount: 原始数量,
-text: 翻译后的内容,
+"id": "原始 ID",
+"indentCount": 原始数量,
+"text": "翻译后的内容"
 }]
 ```
 注意不要携带任何引导词或解释，不要使用代码块包围。
