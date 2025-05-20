@@ -763,8 +763,7 @@ class TranslateTextChunk {
         final listItemPrefix = markdownListItemMatch.group(1);
         final listItemTextFirstLine = markdownListItemMatch.group(2);
         if (listItemPrefix == null || listItemTextFirstLine == null) return;
-        final indentText =
-            ' ' * (_indentCount(lines[0]) + listItemPrefix.length + 1);
+        final indentCount = _indentCount(lines[0]) + listItemPrefix.length + 1;
 
         /// 翻译原始内容
         final content =
@@ -777,12 +776,12 @@ class TranslateTextChunk {
         translationChunkList.add(
           TranslationChunk(
             id: translationChunkId,
-            indentCount: 0,
+            indentCount: indentCount,
             text: content,
           ),
         );
         modifiedLines.add('');
-        modifiedLines.add('$indentText$translationChunkId');
+        modifiedLines.add(translationChunkId);
       }
     }
   }
