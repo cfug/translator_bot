@@ -46,6 +46,9 @@ enum TextStructureType {
   /// ```
   markdownCodeBlock,
 
+  /// Markdown 表格
+  markdownTable,
+
   /// Markdown 自定义 aside/admonition 语法（存在类型）
   ///
   /// - `:::类型`
@@ -95,7 +98,6 @@ class TranslateTextChunk {
     final textStructureList = _parseTextStructure(content);
     _chunkTextStructure(textStructureList);
     final translatedText = await _translateChunkTextStructure() ?? text;
-    print(translatedText);
     return translatedText;
   }
 
@@ -430,6 +432,47 @@ class TranslateTextChunk {
       }
       /* END */
 
+      /* BEGIN Markdown 表格 */
+      final markdownTableRegex = RegExp(r'^\s*(\S.*?\|.*\S)\s*$');
+      if (markdownTableRegex.hasMatch(lineTrim)) {
+        if (textStructureType != TextStructureType.markdownTable) {
+          /// Markdown 表格 - 开始
+          textStructureType = TextStructureType.markdownTable;
+          startLineIndex = i;
+          originalText.add(line);
+          continue;
+        } else {
+          if (lineNextTrim == null ||
+              !markdownTableRegex.hasMatch(lineNextTrim)) {
+            /// Markdown 表格 - 结束
+            endLineIndex = i;
+            originalText.add(line);
+
+            /// 添加结构数据
+            textStructureList.add(
+              TextStructure(
+                type: textStructureType,
+                start: startLineIndex,
+                end: endLineIndex,
+                originalText: originalText,
+              ),
+            );
+
+            /// 清理
+            textStructureType = TextStructureType.none;
+            originalText = [];
+            continue;
+          }
+        }
+      }
+
+      /// Markdown 表格 - 内容
+      if (textStructureType == TextStructureType.markdownTable) {
+        originalText.add(line);
+        continue;
+      }
+      /* END */
+
       /* BEGIN 整块段落 - 除上方其他规则以外无法判定的内容 */
       if (textStructureType != TextStructureType.paragraph) {
         /// 段落开始
@@ -452,6 +495,7 @@ class TranslateTextChunk {
               markdownDefineLinkRegex.hasMatch(lineNextTrim) ||
               markdownImageRegex.hasMatch(lineNextTrim) ||
               markdownHorizontalRuleRegex.hasMatch(lineNextTrim) ||
+              markdownTableRegex.hasMatch(lineNextTrim) ||
               markdownCustomAsideRegex.hasMatch(lineNextTrim) ||
               markdownCustomSyntax1Regex.hasMatch(lineNextTrim) ||
               markdownCustomSyntax2Regex.hasMatch(lineNextTrim) ||
@@ -516,6 +560,12 @@ class TranslateTextChunk {
           }
         case TextStructureType.markdownListItem:
           _chunkMarkdownListItem(textStructure);
+          if (textStructureNext != null &&
+              textStructureNext.type != TextStructureType.blankLine) {
+            modifiedLines.add('');
+          }
+        case TextStructureType.markdownTable:
+          _chunkMarkdownTable(textStructure);
           if (textStructureNext != null &&
               textStructureNext.type != TextStructureType.blankLine) {
             modifiedLines.add('');
@@ -713,6 +763,8 @@ class TranslateTextChunk {
         final listItemPrefix = markdownListItemMatch.group(1);
         final listItemTextFirstLine = markdownListItemMatch.group(2);
         if (listItemPrefix == null || listItemTextFirstLine == null) return;
+        final indentText =
+            ' ' * (_indentCount(lines[0]) + listItemPrefix.length + 1);
 
         /// 翻译原始内容
         final content =
@@ -725,12 +777,86 @@ class TranslateTextChunk {
         translationChunkList.add(
           TranslationChunk(
             id: translationChunkId,
-            indentCount: listItemPrefix.length + 1,
+            indentCount: 0,
             text: content,
           ),
         );
         modifiedLines.add('');
-        modifiedLines.add(translationChunkId);
+        modifiedLines.add('$indentText$translationChunkId');
+      }
+    }
+  }
+
+  /// 分块表格（翻译 ID 占位）
+  void _chunkMarkdownTable(TextStructure textStructure) {
+    final lines = textStructure.originalText;
+
+    /// 至少 3 行（表头 分割 主内容）
+    if (lines.length >= 3) {
+      final tableHeader = lines[0];
+      final tableSeparator = lines[1];
+      final indentText = ' ' * _indentCount(tableHeader);
+
+      /// 处理表头
+      final modifiedTableHeader = tableHeader
+          .split('|')
+          .map((cell) {
+            final cellTrim = cell.trim();
+            if (cellTrim != '') {
+              /// 翻译块 ID
+              final translationChunkId = _translationChunkId();
+
+              /// 添加翻译块 ID 占位
+              translationChunkList.add(
+                TranslationChunk(
+                  id: translationChunkId,
+                  indentCount: 0,
+                  text: cellTrim,
+                ),
+              );
+
+              return '<t>$cellTrim</t><t>$translationChunkId</t>';
+            } else {
+              return cell;
+            }
+          })
+          .join('|');
+      modifiedLines.add('$indentText$modifiedTableHeader');
+      modifiedLines.add('$indentText$tableSeparator');
+
+      /// 处理表主体内容
+      for (var i = 2; i < lines.length; i++) {
+        final tableData = lines[i];
+
+        /// 添加原始行
+        modifiedLines.add(tableData);
+
+        /// 添加翻译占位 ID 行
+        final modifiedTableData = tableData
+            .split('|')
+            .map((cell) {
+              final cellTrim = cell.trim();
+
+              if (cellTrim != '') {
+                /// 翻译块 ID
+                final translationChunkId = _translationChunkId();
+
+                /// 添加翻译块 ID 占位
+                translationChunkList.add(
+                  TranslationChunk(
+                    id: translationChunkId,
+                    indentCount: 0,
+                    text: cellTrim,
+                  ),
+                );
+
+                return translationChunkId;
+              } else {
+                return cell;
+              }
+            })
+            .join('|');
+        modifiedLines.add('$indentText$modifiedTableData');
       }
     }
   }
@@ -849,12 +975,12 @@ class TranslateTextChunk {
         }
       }
     }
-    // print(inputChunkTextList);
-    // return null;
 
     if (inputChunkTextList.isNotEmpty) {
       /// 已翻译完成的分块数据
       final List<TranslationChunk> translatedChunkList = [];
+
+      print('🚀 总共需要翻译的数据：${inputChunkTextList.length} 批');
 
       /// 开始翻译
       for (var i = 0; i < inputChunkTextList.length; i++) {
@@ -881,7 +1007,7 @@ class TranslateTextChunk {
             );
           }
         }
-        print('✅ 已翻译第 ${i + 1} 批数据');
+        print('✅ 完成翻译第 ${i + 1} 批数据');
       }
 
       /// 将翻译替换至原文
@@ -890,6 +1016,7 @@ class TranslateTextChunk {
         modifiedText = modifiedText.replaceAll(
           translatedChunk.id,
           translatedChunk.text
+              .trim()
               .split('\n')
               .map(
                 (line) => '${" " * translatedChunk.indentCount}${line.trim()}',
