@@ -176,24 +176,15 @@ class Translator {
       final translatorChunkResult = await geminiService.translatorChunk(
         fileText,
       );
-      if (translatorChunkResult == null) {
-        await updateBotStateIssueComment(
-          BotState.error,
-          '💬 AI 生成发生错误 \n'
-          '$emojiGap**Github Action:** $actionHtmlUrl \n',
-        );
-        stderr.writeln('❌ gemini error: 准备语句不符合预期');
-        exit(1);
-      }
       translatedText = translatorChunkResult.outputText;
       totalTokenCount = translatorChunkResult.totalTokenCount;
     } on GenerativeAIException catch (e) {
       await updateBotStateIssueComment(
         BotState.error,
-        '💬 AI 生成发生错误 \n'
+        '💬 AI 生成或处理发生错误 \n'
         '$emojiGap**Github Action:** $actionHtmlUrl \n',
       );
-      stderr.writeln('❌ gemini error: $e');
+      stderr.writeln('❌ error: $e');
       exit(1);
     }
 

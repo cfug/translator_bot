@@ -1,6 +1,6 @@
-class Reformat {
+class ReformatText {
   /// 按特定需求格式化内容，方便分块处理识别。
-  Reformat(this.text);
+  ReformatText(this.text);
 
   String text;
 
@@ -14,7 +14,7 @@ class Reformat {
   /// Markdown 列表项
   ///
   /// 在每个列表项上方加一行换行
-  Reformat markdownListItem() {
+  ReformatText markdownListItem() {
     // 列表项正则
     final listPattern = RegExp(r'^\s*([*+\-]|\d+\.)\s+');
     final List<String> lines = text.split('\n');
@@ -55,7 +55,7 @@ class Reformat {
   /// Markdown 自定义 `:::` 块语法
   ///
   /// 在 `:::` 上方和下方加一行换行
-  Reformat markdownThreeColons() {
+  ReformatText markdownThreeColons() {
     final List<String> lines = text.split('\n');
     final List<String> modifiedLines = [];
 
@@ -90,7 +90,7 @@ class Reformat {
   /// Liquid 自定义 `{% comment %}` `{% endcomment %}` 块语法
   ///
   /// 在上方和下方加一行换行
-  Reformat liquidComment() {
+  ReformatText liquidComment() {
     final List<String> lines = text.split('\n');
     final List<String> modifiedLines = [];
 
@@ -131,7 +131,7 @@ class Reformat {
   }
 
   /// 移除顶部元数据多余的换行符
-  Reformat removeTopMetadataLineBreaks() {
+  ReformatText removeTopMetadataLineBreaks() {
     // 匹配顶部的 --- 块，
     // 确保结束的 --- 后紧跟换行或结尾
     final frontMatterPattern = RegExp(

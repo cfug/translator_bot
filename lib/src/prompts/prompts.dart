@@ -1,4 +1,6 @@
+import 'translation_spec_prompt.dart';
 import 'chinese_typography_guide_prompt.dart';
+import 'glossary_prompt.dart';
 
 /// translatorPrompt
 final translatorPrompt =
@@ -13,9 +15,14 @@ final translatorPrompt =
 
 ## 翻译格式规则
 - 译文的格式、词句换行应尽量与英文原文相同（一行尽可能在 80 字符内）。
+以下是翻译格式详细规则以及示例片段：
+$translationSpecPrompt
 
 ## 翻译的中文排版规则
 $chineseTypographyGuidePrompt
+
+## 专有名词
+$glossaryPrompt
 
 ## 交互方式
 我会输入以下格式的内容：
@@ -35,5 +42,5 @@ text:
 "text": "翻译后的内容"
 }]
 ```
-注意不要携带任何引导词或解释，不要使用代码块包围。
+请确保输出正确的 json 格式，注意不要携带任何引导词或解释，不要使用代码块包围。
 '''.trim();

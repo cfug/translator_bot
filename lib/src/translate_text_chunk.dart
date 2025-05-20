@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:uuid/uuid.dart';
 
-import 'reformat.dart';
+import 'reformat_text.dart';
 
 /// 文本结构类型
 enum TextStructureType {
@@ -91,10 +91,11 @@ class TranslateTextChunk {
   final List<TranslationChunk> translationChunkList = [];
 
   Future<String> run() async {
-    final content = Reformat(text).all();
+    final content = ReformatText(text).all();
     final textStructureList = _parseTextStructure(content);
     _chunkTextStructure(textStructureList);
     final translatedText = await _translateChunkTextStructure() ?? text;
+    print(translatedText);
     return translatedText;
   }
 
@@ -848,6 +849,8 @@ class TranslateTextChunk {
         }
       }
     }
+    // print(inputChunkTextList);
+    // return null;
 
     if (inputChunkTextList.isNotEmpty) {
       /// 已翻译完成的分块数据
@@ -864,9 +867,18 @@ class TranslateTextChunk {
         );
         final translatedText = translatedResponse.text?.trim() ?? '';
         if (translatedText != '') {
-          final List<dynamic> translatedJsonList = jsonDecode(translatedText);
-          for (final translatedJson in translatedJsonList) {
-            translatedChunkList.add(TranslationChunk.fromJson(translatedJson));
+          try {
+            final List<dynamic> translatedJsonList = jsonDecode(translatedText);
+            for (final translatedJson in translatedJsonList) {
+              translatedChunkList.add(
+                TranslationChunk.fromJson(translatedJson),
+              );
+            }
+          } catch (e) {
+            throw GenerativeAIException(
+              'AI 响应输出的 json 格式处理错误\n'
+              '$e\n',
+            );
           }
         }
         print('✅ 已翻译第 ${i + 1} 批数据');
@@ -878,9 +890,10 @@ class TranslateTextChunk {
         modifiedText = modifiedText.replaceAll(
           translatedChunk.id,
           translatedChunk.text
-              .trim()
               .split('\n')
-              .map((line) => '${" " * translatedChunk.indentCount}$line')
+              .map(
+                (line) => '${" " * translatedChunk.indentCount}${line.trim()}',
+              )
               .join('\n'),
         );
       }

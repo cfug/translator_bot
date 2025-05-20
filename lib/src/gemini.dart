@@ -12,8 +12,8 @@ class GeminiService {
         systemInstruction: Content.system(translatorPrompt),
         generationConfig: GenerationConfig(
           maxOutputTokens: 8192,
-          temperature: 0.5,
-          topP: 0.5,
+          temperature: 0.2,
+          topP: 0.2,
           responseMimeType: 'application/json',
         ),
         httpClient: httpClient,
@@ -32,7 +32,7 @@ class GeminiService {
   /// @return
   /// - [outputText] 全部输出内容
   /// - [totalTokenCount] 当前消耗的总 Token
-  Future<({String outputText, int totalTokenCount})?> translatorChunk(
+  Future<({String outputText, int totalTokenCount})> translatorChunk(
     String text,
   ) async {
     /// 开始处理
