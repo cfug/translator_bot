@@ -17,11 +17,11 @@ class ReformatText {
   ReformatText markdownListItem() {
     // 列表项正则
     final listPattern = RegExp(r'^\s*([*+\-]|\d+\.)\s+');
-    final List<String> lines = text.split('\n');
-    final List<String> modifiedLines = [];
-    bool inCodeBlock = false; // 标记是否在代码块中
+    final lines = text.split('\n');
+    final modifiedLines = <String>[];
+    var inCodeBlock = false; // 标记是否在代码块中
 
-    for (final String currentLine in lines) {
+    for (final currentLine in lines) {
       // 检测代码块边界
       if (currentLine.trimLeft().startsWith('```')) {
         inCodeBlock = !inCodeBlock;
@@ -34,7 +34,7 @@ class ReformatText {
         modifiedLines.add(currentLine);
       } else {
         // 非代码块内容处理列表项
-        final bool isListLine = listPattern.hasMatch(currentLine);
+        final isListLine = listPattern.hasMatch(currentLine);
 
         if (isListLine) {
           // 在列表项前添加空行（确保前一行非空）
@@ -56,10 +56,10 @@ class ReformatText {
   ///
   /// 在 `:::` 上方和下方加一行换行
   ReformatText markdownThreeColons() {
-    final List<String> lines = text.split('\n');
-    final List<String> modifiedLines = [];
+    final lines = text.split('\n');
+    final modifiedLines = <String>[];
 
-    for (int i = 0; i < lines.length; i++) {
+    for (var i = 0; i < lines.length; i++) {
       final currentLine = lines[i];
       final isColonLine = currentLine.trimLeft().startsWith(':::');
 
@@ -91,10 +91,10 @@ class ReformatText {
   ///
   /// 在上方和下方加一行换行
   ReformatText liquidComment() {
-    final List<String> lines = text.split('\n');
-    final List<String> modifiedLines = [];
+    final lines = text.split('\n');
+    final modifiedLines = <String>[];
 
-    for (int i = 0; i < lines.length; i++) {
+    for (var i = 0; i < lines.length; i++) {
       final currentLine = lines[i];
       final currentLineTrimLeft = currentLine.trimLeft();
       final preLine = i == 0 ? null : lines[i - 1];

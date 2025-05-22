@@ -62,78 +62,9 @@ class Translator {
   String get actionHtmlUrl =>
       '[链接](https://github.com/${repoSlug.fullName}/actions/runs/$actionId)';
 
-  /// 评论内容 - 由谁触发操作
-  /// - [isAt] 是否触发 @，以提醒触发者
-  String? footerTriggeredComment({bool isAt = false}) {
-    if (issueComment == null) return null;
-    return '🚀 本次操作由 ${isAt ? "@${issueComment!.user?.login} - " : ""}${issueComment!.htmlUrl} 触发。';
-  }
-
-  /// 获取触发的评论信息
-  Future<void> initIssueCommentInfo() async {
-    if (dryRun || issueComment != null) return;
-    issueComment = await githubService.fetchIssueComment(repoSlug, commentId);
-    if (issueComment?.id == null) {
-      stderr.writeln('❌ 获取评论失败');
-      exit(1);
-    }
-  }
-
-  /// Bot 创建初始评论 - 正在运行
-  Future<void> initBotStateIssueComment() async {
-    if (dryRun || botIssueComment != null) return;
-    await initIssueCommentInfo();
-    botIssueComment = await githubService.createIssueComment(
-      repoSlug,
-      issueId,
-      '⚙️ **$botTitle** - 任务进行中... \n'
-      '💬 **Github Action:** $actionHtmlUrl \n'
-      '\n'
-      '${footerTriggeredComment()}',
-    );
-    if (botIssueComment?.id == null) {
-      stderr.writeln('❌ 初始评论创建失败');
-      exit(1);
-    }
-  }
-
-  /// Bot 修改评论 - 任务状态
-  /// - [botState] Bot 当前任务状态
-  /// - [body] 主体信息
-  /// - [footer] 底部信息
-  Future<void> updateBotStateIssueComment(
-    BotState botState,
-    String body, {
-    String footer = '',
-  }) async {
-    if (dryRun || issueComment == null || botIssueComment == null) return;
-    final stateIcon = switch (botState) {
-      BotState.none => '🪄',
-      BotState.running => '⚙️',
-      BotState.success => '✅',
-      BotState.error => '🚫',
-    };
-    final stateText = switch (botState) {
-      BotState.none => '',
-      BotState.running => '- 任务进行中...',
-      BotState.success => '- 任务完成',
-      BotState.error => '- 任务失败',
-    };
-    await githubService.updateIssueComment(
-      repoSlug,
-      botIssueComment!.id!,
-      '$stateIcon **$botTitle** $stateText \n'
-      '$body'
-      '\n'
-      '${footerTriggeredComment(isAt: [BotState.success, BotState.error].contains(botState))}'
-      '\n$footer',
-    );
-  }
-
   /// 运行
   Future<void> run() async {
     logger.log('📦 Repository: $repoSlug');
-    logger.log(' ');
 
     /// 获取仓库信息
     final repositoryInfo = await githubService.fetchRepository(repoSlug);
@@ -141,35 +72,20 @@ class Translator {
     /// Bot 创建初始评论 - 正在运行
     await initBotStateIssueComment();
 
-    /// 获取指定文件内容
-    RepositoryContents? fileContents;
-    try {
-      fileContents = await githubService.fetchFileContents(
-        repoSlug,
-        filePath.trim(),
-      );
-    } finally {
-      if (fileContents == null ||
-          !fileContents.isFile ||
-          fileContents.file == null) {
-        await updateBotStateIssueComment(
-          BotState.error,
-          '💬 未找到指定文件 \n'
-          '$emojiGap**Github Action:** $actionHtmlUrl \n',
-        );
-        stderr.writeln('❓ 未找到指定文件');
-        exit(1);
-      }
-    }
+    /// 获取指定文件
+    final fileContents = await fetchFileContents();
 
-    /// 文件内容
-    final String fileText = fileContents.file!.text;
+    /// 实际的文件路径
+    final actualfilePath = fileContents.file!.path!;
+
+    /// 获取文件内容
+    final fileText = fileContents.file!.text;
 
     /// 已翻译的文本
     String translatedText;
 
     /// 总消耗的 Token
-    int totalTokenCount = 0;
+    var totalTokenCount = 0;
 
     try {
       /// 分块进行翻译
@@ -247,9 +163,9 @@ class Translator {
       logger.log('⚙️ 指定文件修改');
       updateFileResult = await githubService.updateFile(
         repoSlug,
-        filePath,
+        actualfilePath,
         translatedText,
-        '🪄 $botTitle Update $filePath',
+        '🪄 $botTitle Update $actualfilePath',
         fileSha,
         branch: branchName,
       );
@@ -283,7 +199,7 @@ class Translator {
       logger.log('⚙️ PR 创建');
       pullRequest = await githubService.createPullRequests(
         repoSlug,
-        '🪄 [translator bot] $filePath',
+        '🪄 [translator bot] $actualfilePath',
         branchName,
         repositoryInfo.defaultBranch,
         draft: true,
@@ -327,5 +243,155 @@ class Translator {
 
     logger.log(' ');
     logger.log('-----------------------------');
+  }
+
+  /// 获取文件内容
+  Future<RepositoryContents> fetchFileContents() async {
+    /// 实际的文件路径
+    String? actualfilePath;
+
+    /// 格式化文件路径
+    final formatfilePath = filePath
+        .trim()
+        .replaceAll('\\', '/')
+        .replaceFirstMapped(RegExp(r'^(\s*)(\/|\.\/)?'), (_) => './');
+    final filePathValue = formatfilePath.split('/');
+    final filePathLastValue = filePathValue.last;
+
+    /// 当前传输的是文件，但没有文件类型，那就寻找文件
+    if (filePathLastValue != '' && filePathLastValue.split('.').length < 2) {
+      /// 文件路径
+      final findDirectory = formatfilePath.replaceRange(
+        formatfilePath.length - filePathLastValue.length,
+        null,
+        '',
+      );
+
+      /// 查找文件路径下所有文件
+      final findFileContents = await githubService.fetchFileContents(
+        repoSlug,
+        findDirectory,
+      );
+
+      if (findFileContents.tree != null) {
+        final findFileTree = findFileContents.tree!;
+        for (final findFile in findFileTree) {
+          final findFileName = findFile.name?.split('.')[0];
+
+          /// 找到名称相同的文件（忽略文件类型）
+          if (findFile.type == 'file' && findFileName == filePathLastValue) {
+            actualfilePath = '$findDirectory${findFile.name}';
+            break;
+          }
+        }
+      }
+    }
+
+    /// 当前传输的是文件，且指定了格式
+    if (filePathLastValue.split('.').length >= 2) {
+      actualfilePath = formatfilePath;
+    }
+
+    if (actualfilePath == null || actualfilePath == '') {
+      await updateBotStateIssueComment(
+        BotState.error,
+        '💬 请指定一个有效的文件 \n'
+        '$emojiGap**Github Action:** $actionHtmlUrl \n',
+      );
+      stderr.writeln('❓ 请指定一个有效的文件');
+      exit(1);
+    }
+
+    /// 获取文件内容
+    RepositoryContents? fileContents;
+    try {
+      print('📄 正在尝试获取文件：$actualfilePath');
+      fileContents = await githubService.fetchFileContents(
+        repoSlug,
+        actualfilePath,
+      );
+    } finally {
+      if (fileContents == null ||
+          !fileContents.isFile ||
+          fileContents.file == null) {
+        await updateBotStateIssueComment(
+          BotState.error,
+          '💬 未找到指定文件 \n'
+          '$emojiGap**Github Action:** $actionHtmlUrl \n',
+        );
+        stderr.writeln('❓ 未找到指定文件');
+        exit(1);
+      }
+    }
+
+    return fileContents;
+  }
+
+  /// Bot 创建初始评论 - 正在运行
+  Future<void> initBotStateIssueComment() async {
+    if (dryRun || botIssueComment != null) return;
+    await initIssueCommentInfo();
+    botIssueComment = await githubService.createIssueComment(
+      repoSlug,
+      issueId,
+      '⚙️ **$botTitle** - 任务进行中... \n'
+      '💬 **Github Action:** $actionHtmlUrl \n'
+      '\n'
+      '${footerTriggeredComment()}',
+    );
+    if (botIssueComment?.id == null) {
+      stderr.writeln('❌ 初始评论创建失败');
+      exit(1);
+    }
+  }
+
+  /// 获取触发的评论信息
+  Future<void> initIssueCommentInfo() async {
+    if (dryRun || issueComment != null) return;
+    issueComment = await githubService.fetchIssueComment(repoSlug, commentId);
+    if (issueComment?.id == null) {
+      stderr.writeln('❌ 获取评论失败');
+      exit(1);
+    }
+  }
+
+  /// 评论内容 - 由谁触发操作
+  /// - [isAt] 是否触发 @，以提醒触发者
+  String? footerTriggeredComment({bool isAt = false}) {
+    if (issueComment == null) return null;
+    return '🚀 本次操作由 ${isAt ? "@${issueComment!.user?.login} - " : ""}${issueComment!.htmlUrl} 触发。';
+  }
+
+  /// Bot 修改评论 - 任务状态
+  /// - [botState] Bot 当前任务状态
+  /// - [body] 主体信息
+  /// - [footer] 底部信息
+  Future<void> updateBotStateIssueComment(
+    BotState botState,
+    String body, {
+    String footer = '',
+  }) async {
+    if (dryRun || issueComment == null || botIssueComment == null) return;
+    final stateIcon = switch (botState) {
+      BotState.none => '🪄',
+      BotState.running => '⚙️',
+      BotState.success => '✅',
+      BotState.error => '🚫',
+    };
+    final stateText = switch (botState) {
+      BotState.none => '',
+      BotState.running => '- 任务进行中...',
+      BotState.success => '- 任务完成',
+      BotState.error => '- 任务失败',
+    };
+    await githubService.updateIssueComment(
+      repoSlug,
+      botIssueComment!.id!,
+      '$stateIcon **$botTitle** $stateText \n'
+      '$body'
+      '\n'
+      '${footerTriggeredComment(isAt: [BotState.success, BotState.error].contains(botState))}'
+      '\n$footer',
+    );
   }
 }

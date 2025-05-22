@@ -103,10 +103,12 @@ class TranslateTextChunk {
 
   /// 处理文本结构数据（按行识别）
   ///
+  /// TODO: 用 AST tree 来实现
+  ///
   /// - [content] 需要结构处理的内容
   List<TextStructure> _parseTextStructure(String content) {
     /// 内容结构的数据（可以完全还原至原始内容）
-    final List<TextStructure> textStructureList = [];
+    final textStructureList = <TextStructure>[];
 
     /// 当前文本结构类型
     var textStructureType = TextStructureType.none;
@@ -118,10 +120,10 @@ class TranslateTextChunk {
     var endLineIndex = 0;
 
     /// 原始文本行
-    List<String> originalText = [];
+    var originalText = <String>[];
 
     /// 按行处理
-    final List<String> lines = content.split('\n');
+    final lines = content.split('\n');
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
       final lineTrim = line.trim();
@@ -592,7 +594,7 @@ class TranslateTextChunk {
     String? currentMetadataLineName;
 
     /// 当前正在识别的元数据属性内容
-    List<String> currentMetadataLineValue = [];
+    var currentMetadataLineValue = <String>[];
 
     /// 按行处理
     for (var i = 0; i < lines.length; i++) {
@@ -977,7 +979,7 @@ class TranslateTextChunk {
 
     if (inputChunkTextList.isNotEmpty) {
       /// 已翻译完成的分块数据
-      final List<TranslationChunk> translatedChunkList = [];
+      final translatedChunkList = <TranslationChunk>[];
 
       print('🚀 总共需要翻译的数据：${inputChunkTextList.length} 批');
 
