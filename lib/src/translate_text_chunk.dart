@@ -93,6 +93,12 @@ class TranslateTextChunk {
   /// 翻译 ID 占位块的数据
   final List<TranslationChunk> translationChunkList = [];
 
+  /// 在文档顶部的翻译说明
+  String get translationNote =>
+      '\n:::note\n'
+      '本篇文档由 AI 翻译。\n'
+      ':::';
+
   Future<String> run() async {
     final content = ReformatText(text).all();
     final textStructureList = _parseTextStructure(content);
@@ -548,6 +554,11 @@ class TranslateTextChunk {
       switch (textStructureType) {
         case TextStructureType.topMetadata:
           _chunkTopMetadata(textStructure);
+          modifiedLines.add(translationNote);
+          if (textStructureNext != null &&
+              textStructureNext.type != TextStructureType.blankLine) {
+            modifiedLines.add('');
+          }
         case TextStructureType.paragraph:
           _chunkMarkdownParagraph(textStructure);
           if (textStructureNext != null &&
