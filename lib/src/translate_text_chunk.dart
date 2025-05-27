@@ -75,6 +75,42 @@ enum TextStructureType {
 
   /// HTML 标签 `<xxx`、`</xxx`
   htmlTag,
+
+  /// HTML 注释 `<!-- xx -->`
+  htmlComment,
+
+  /// 中文 - 段落
+  chineseParagraph,
+
+  /// 中文 - 顶部元数据
+  chineseTopMetadata,
+
+  /// 中文 - Markdown 标题 `# xxx`
+  chineseMarkdownTitle,
+
+  /// 中文 - Markdown 列表项 `* xxx`、`- xxx`、`1. xxx`
+  chineseMarkdownListItem,
+
+  /// 中文 - Markdown 表格
+  chineseMarkdownTable,
+
+  /// 中文 - Markdown 自定义 aside/admonition 语法（存在类型、标题）
+  ///
+  /// - `:::类型 标题`
+  chineseMarkdownCustomAsideTypeTitle,
+
+  /// 中文 - Liquid 语法1 `{%`
+  chinsesLiquid1;
+
+  bool get isChinese => [
+    TextStructureType.chineseParagraph,
+    TextStructureType.chineseTopMetadata,
+    TextStructureType.chineseMarkdownTitle,
+    TextStructureType.chineseMarkdownListItem,
+    TextStructureType.chineseMarkdownTable,
+    TextStructureType.chineseMarkdownCustomAsideTypeTitle,
+    TextStructureType.chinsesLiquid1,
+  ].contains(this);
 }
 
 class TranslateTextChunk {
@@ -153,6 +189,13 @@ class TranslateTextChunk {
           lineTrim == topMetadataRegex) {
         endLineIndex = i;
         originalText.add(line);
+
+        /// 标记中文
+        final isChinese = _isChinese(originalText.join());
+        textStructureType =
+            isChinese
+                ? TextStructureType.chineseTopMetadata
+                : textStructureType;
 
         /// 添加结构数据
         textStructureList.add(
@@ -262,6 +305,13 @@ class TranslateTextChunk {
         if (isListItemEnd) {
           endLineIndex = i;
 
+          /// 标记中文
+          final isChinese = _isChinese(originalText.join());
+          textStructureType =
+              isChinese
+                  ? TextStructureType.chineseMarkdownListItem
+                  : textStructureType;
+
           /// 添加结构数据
           textStructureList.add(
             TextStructure(
@@ -284,9 +334,14 @@ class TranslateTextChunk {
       /// `# xxx`
       final markdownTitleRegex = RegExp(r'^\s*#{1,6}\s+.+$');
       if (markdownTitleRegex.hasMatch(lineTrim)) {
+        /// 标记中文
+        final isChinese = _isChinese(line);
         textStructureList.add(
           TextStructure(
-            type: TextStructureType.markdownTitle,
+            type:
+                isChinese
+                    ? TextStructureType.chineseMarkdownTitle
+                    : TextStructureType.markdownTitle,
             start: i,
             end: i,
             originalText: [line],
@@ -357,21 +412,27 @@ class TranslateTextChunk {
         final type = match?.group(2)?.trim() != '' ? match?.group(2) : null;
         final title = match?.group(3)?.trim() != '' ? match?.group(3) : null;
 
-        var textStructureType = TextStructureType.markdownCustomAsideEnd;
+        var markdownCustomAsideType = TextStructureType.markdownCustomAsideEnd;
         if (type != null && title != null) {
-          textStructureType = TextStructureType.markdownCustomAsideTypeTitle;
+          /// 标记中文
+          final isChinese = _isChinese(line);
+          markdownCustomAsideType =
+              isChinese
+                  ? TextStructureType.chineseMarkdownCustomAsideTypeTitle
+                  : TextStructureType.markdownCustomAsideTypeTitle;
         } else if (type != null) {
-          textStructureType = TextStructureType.markdownCustomAsideType;
+          markdownCustomAsideType = TextStructureType.markdownCustomAsideType;
         }
 
         textStructureList.add(
           TextStructure(
-            type: textStructureType,
+            type: markdownCustomAsideType,
             start: i,
             end: i,
             originalText: [line],
           ),
         );
+
         continue;
       }
       /* END */
@@ -412,9 +473,14 @@ class TranslateTextChunk {
       /// `{% xxx`
       final liquidSyntax1Regex = RegExp(r'^\s*\{%');
       if (liquidSyntax1Regex.hasMatch(lineTrim)) {
+        /// 标记中文
+        final isChinese = _isChinese(line);
         textStructureList.add(
           TextStructure(
-            type: TextStructureType.liquid1,
+            type:
+                isChinese
+                    ? TextStructureType.chinsesLiquid1
+                    : TextStructureType.liquid1,
             start: i,
             end: i,
             originalText: [line],
@@ -427,7 +493,7 @@ class TranslateTextChunk {
       /* BEGIN 单行 HTML 标签 `<xxx`、`</xxx` */
       /// `<xxx`、`</xxx
       final htmlTagRegex = RegExp(r'^\s*<\/?[a-zA-Z][a-zA-Z0-9-]*');
-      if (htmlTagRegex.hasMatch(lineTrim)) {
+      if (htmlTagRegex.hasMatch(lineTrim) && !lineTrim.startsWith('<br')) {
         textStructureList.add(
           TextStructure(
             type: TextStructureType.htmlTag,
@@ -436,6 +502,65 @@ class TranslateTextChunk {
             originalText: [line],
           ),
         );
+        continue;
+      }
+      /* END */
+
+      /* BEGIN HTML 注释 `<!-- xx -->` */
+      final htmlCommentBeginRegex = RegExp(r'^\s*<!--');
+      final htmlCommentEndRegex = RegExp(r'-->');
+
+      /// HTML 注释 - 开始
+      if (htmlCommentBeginRegex.hasMatch(lineTrim) &&
+          textStructureType != TextStructureType.htmlComment) {
+        textStructureType = TextStructureType.htmlComment;
+        startLineIndex = i;
+        originalText.add(line);
+
+        /// HTML 注释 - 单行结束
+        if (htmlCommentEndRegex.hasMatch(lineTrim)) {
+          /// 添加结构数据
+          textStructureList.add(
+            TextStructure(
+              type: textStructureType,
+              start: startLineIndex,
+              end: startLineIndex,
+              originalText: originalText,
+            ),
+          );
+
+          /// 清理
+          textStructureType = TextStructureType.none;
+          originalText = [];
+        }
+        continue;
+      }
+
+      /// HTML 注释 - 多行结束
+      if (htmlCommentEndRegex.hasMatch(lineTrim) &&
+          textStructureType == TextStructureType.htmlComment) {
+        endLineIndex = i;
+        originalText.add(line);
+
+        /// 添加结构数据
+        textStructureList.add(
+          TextStructure(
+            type: textStructureType,
+            start: startLineIndex,
+            end: endLineIndex,
+            originalText: originalText,
+          ),
+        );
+
+        /// 清理
+        textStructureType = TextStructureType.none;
+        originalText = [];
+        continue;
+      }
+
+      /// HTML 注释 - 多行内容
+      if (textStructureType == TextStructureType.htmlComment) {
+        originalText.add(line);
         continue;
       }
       /* END */
@@ -455,6 +580,13 @@ class TranslateTextChunk {
             /// Markdown 表格 - 结束
             endLineIndex = i;
             originalText.add(line);
+
+            /// 标记中文
+            final isChinese = _isChinese(originalText.join());
+            textStructureType =
+                isChinese
+                    ? TextStructureType.chineseMarkdownTable
+                    : textStructureType;
 
             /// 添加结构数据
             textStructureList.add(
@@ -493,33 +625,40 @@ class TranslateTextChunk {
 
         /// 判定是否结束段落
         var isParagraphEnd = false;
-        if (lineNextTrim != null) {
-          /// 下一行是否可判定为上方的其他类型
-          final isNextLineNotParagraph =
-              lineNextTrim == '' ||
-              lineNextTrim.startsWith(markdownCodeBlockRegex) ||
-              markdownListItemRegex.hasMatch(lineNextTrim) ||
-              markdownTitleRegex.hasMatch(lineNextTrim) ||
-              markdownDefineLinkRegex.hasMatch(lineNextTrim) ||
-              markdownImageRegex.hasMatch(lineNextTrim) ||
-              markdownHorizontalRuleRegex.hasMatch(lineNextTrim) ||
-              markdownTableRegex.hasMatch(lineNextTrim) ||
-              markdownCustomAsideRegex.hasMatch(lineNextTrim) ||
-              markdownCustomSyntax1Regex.hasMatch(lineNextTrim) ||
-              markdownCustomSyntax2Regex.hasMatch(lineNextTrim) ||
-              liquidSyntax1Regex.hasMatch(lineNextTrim) ||
-              htmlTagRegex.hasMatch(lineNextTrim);
 
-          if (isNextLineNotParagraph) {
-            isParagraphEnd = true;
-          }
-        } else {
+        /// 下一行是否可判定为上方的其他类型
+        final isNextLineNotParagraph =
+            lineNextTrim == null ||
+            lineNextTrim == '' ||
+            lineNextTrim.startsWith(markdownCodeBlockRegex) ||
+            markdownListItemRegex.hasMatch(lineNextTrim) ||
+            markdownTitleRegex.hasMatch(lineNextTrim) ||
+            markdownDefineLinkRegex.hasMatch(lineNextTrim) ||
+            markdownImageRegex.hasMatch(lineNextTrim) ||
+            markdownHorizontalRuleRegex.hasMatch(lineNextTrim) ||
+            markdownTableRegex.hasMatch(lineNextTrim) ||
+            markdownCustomAsideRegex.hasMatch(lineNextTrim) ||
+            markdownCustomSyntax1Regex.hasMatch(lineNextTrim) ||
+            markdownCustomSyntax2Regex.hasMatch(lineNextTrim) ||
+            liquidSyntax1Regex.hasMatch(lineNextTrim) ||
+            (htmlTagRegex.hasMatch(lineNextTrim) &&
+                !lineNextTrim.startsWith('<br')) ||
+            htmlCommentBeginRegex.hasMatch(lineNextTrim);
+
+        if (isNextLineNotParagraph) {
           isParagraphEnd = true;
         }
 
         /// 结束段落
         if (isParagraphEnd) {
           endLineIndex = i;
+
+          /// 标记中文
+          final isChinese = _isChinese(originalText.join());
+          textStructureType =
+              isChinese
+                  ? TextStructureType.chineseParagraph
+                  : textStructureType;
 
           /// 添加结构数据
           textStructureList.add(
@@ -548,47 +687,25 @@ class TranslateTextChunk {
     for (var i = 0; i < textStructureList.length; i++) {
       final textStructure = textStructureList[i];
       final textStructureType = textStructure.type;
-      final textStructureNext =
-          i == textStructureList.length - 1 ? null : textStructureList[i + 1];
 
       switch (textStructureType) {
         case TextStructureType.topMetadata:
-          _chunkTopMetadata(textStructure);
+          _chunkTopMetadata(i, textStructure, textStructureList);
           modifiedLines.add(translationNote);
-          if (textStructureNext != null &&
-              textStructureNext.type != TextStructureType.blankLine) {
-            modifiedLines.add('');
-          }
         case TextStructureType.paragraph:
-          _chunkMarkdownParagraph(textStructure);
-          if (textStructureNext != null &&
-              textStructureNext.type != TextStructureType.blankLine) {
-            modifiedLines.add('');
-          }
+          _chunkMarkdownParagraph(i, textStructure, textStructureList);
         case TextStructureType.markdownTitle:
-          _chunkMarkdownTitle(textStructure);
-          if (textStructureNext != null &&
-              textStructureNext.type != TextStructureType.blankLine) {
-            modifiedLines.add('');
-          }
+          _chunkMarkdownTitle(i, textStructure, textStructureList);
         case TextStructureType.markdownListItem:
-          _chunkMarkdownListItem(textStructure);
-          if (textStructureNext != null &&
-              textStructureNext.type != TextStructureType.blankLine) {
-            modifiedLines.add('');
-          }
+          _chunkMarkdownListItem(i, textStructure, textStructureList);
         case TextStructureType.markdownTable:
-          _chunkMarkdownTable(textStructure);
-          if (textStructureNext != null &&
-              textStructureNext.type != TextStructureType.blankLine) {
-            modifiedLines.add('');
-          }
+          _chunkMarkdownTable(i, textStructure, textStructureList);
         case TextStructureType.markdownCustomAsideTypeTitle:
-          _chunkMarkdownCustomAsideTypeTitle(textStructure);
-          if (textStructureNext != null &&
-              textStructureNext.type != TextStructureType.blankLine) {
-            modifiedLines.add('');
-          }
+          _chunkMarkdownCustomAsideTypeTitle(
+            i,
+            textStructure,
+            textStructureList,
+          );
         case TextStructureType.liquid1:
           _chunkLiquidTab(textStructure);
         case _:
@@ -598,8 +715,19 @@ class TranslateTextChunk {
   }
 
   /// 分块顶部元数据（翻译 ID 占位）
-  void _chunkTopMetadata(TextStructure textStructure) {
+  /// - [index] 当前数据索引
+  /// - [textStructure] 当前数据
+  /// - [textStructureList] 所有数据
+  void _chunkTopMetadata(
+    int index,
+    TextStructure textStructure,
+    List<TextStructure> textStructureList,
+  ) {
     final lines = textStructure.originalText;
+    final textStructureNext =
+        index == textStructureList.length - 1
+            ? null
+            : textStructureList[index + 1];
 
     /// 当前正在识别的元数据属性名称
     String? currentMetadataLineName;
@@ -692,11 +820,33 @@ class TranslateTextChunk {
         currentMetadataLineValue = [];
       }
     }
+
+    if (textStructureNext != null &&
+        textStructureNext.type != TextStructureType.blankLine) {
+      modifiedLines.add('');
+    }
   }
 
   /// 分块段落（翻译 ID 占位）
-  void _chunkMarkdownParagraph(TextStructure textStructure) {
+  /// - [index] 当前数据索引
+  /// - [textStructure] 当前数据
+  /// - [textStructureList] 所有数据
+  void _chunkMarkdownParagraph(
+    int index,
+    TextStructure textStructure,
+    List<TextStructure> textStructureList,
+  ) {
     var lines = textStructure.originalText;
+    final textStructureNext =
+        index == textStructureList.length - 1
+            ? null
+            : textStructureList[index + 1];
+    final textStructureNext2 =
+        index >= textStructureList.length - 2
+            ? null
+            : textStructureList[index + 2];
+    final textStructureNext2IsChinese =
+        textStructureNext2?.type.isChinese ?? false;
 
     /// 处理 `:` 开头的情况
     lines =
@@ -709,7 +859,7 @@ class TranslateTextChunk {
     /// 添加原始内容
     modifiedLines.addAll(lines);
 
-    if (lines.isNotEmpty) {
+    if (lines.isNotEmpty && !textStructureNext2IsChinese) {
       final content = lines.join('\n');
 
       /// 翻译块 ID
@@ -725,17 +875,39 @@ class TranslateTextChunk {
       );
       modifiedLines.add('');
       modifiedLines.add(translationChunkId);
+
+      if (textStructureNext != null &&
+          textStructureNext.type != TextStructureType.blankLine) {
+        modifiedLines.add('');
+      }
     }
   }
 
   /// 分块标题（翻译 ID 占位）
-  void _chunkMarkdownTitle(TextStructure textStructure) {
+  /// - [index] 当前数据索引
+  /// - [textStructure] 当前数据
+  /// - [textStructureList] 所有数据
+  void _chunkMarkdownTitle(
+    int index,
+    TextStructure textStructure,
+    List<TextStructure> textStructureList,
+  ) {
     final lines = textStructure.originalText;
+    final textStructureNext =
+        index == textStructureList.length - 1
+            ? null
+            : textStructureList[index + 1];
+    final textStructureNext2 =
+        index >= textStructureList.length - 2
+            ? null
+            : textStructureList[index + 2];
+    final textStructureNext2IsChinese =
+        textStructureNext2?.type.isChinese ?? false;
 
     /// 添加原始内容
     modifiedLines.addAll(lines);
 
-    if (lines.isNotEmpty) {
+    if (lines.isNotEmpty && !textStructureNext2IsChinese) {
       final content = lines.join('\n');
 
       final markdownTitleRegex = RegExp(r'^\s*(#{1,6})\s*(.*?)\s*$');
@@ -758,18 +930,40 @@ class TranslateTextChunk {
         );
         modifiedLines.add('');
         modifiedLines.add('$titlePrefix $translationChunkId');
+
+        if (textStructureNext != null &&
+            textStructureNext.type != TextStructureType.blankLine) {
+          modifiedLines.add('');
+        }
       }
     }
   }
 
   /// 分块列表项（翻译 ID 占位）
-  void _chunkMarkdownListItem(TextStructure textStructure) {
+  /// - [index] 当前数据索引
+  /// - [textStructure] 当前数据
+  /// - [textStructureList] 所有数据
+  void _chunkMarkdownListItem(
+    int index,
+    TextStructure textStructure,
+    List<TextStructure> textStructureList,
+  ) {
     final lines = textStructure.originalText;
+    final textStructureNext =
+        index == textStructureList.length - 1
+            ? null
+            : textStructureList[index + 1];
+    final textStructureNext2 =
+        index >= textStructureList.length - 2
+            ? null
+            : textStructureList[index + 2];
+    final textStructureNext2IsChinese =
+        textStructureNext2?.type.isChinese ?? false;
 
     /// 添加原始内容
     modifiedLines.addAll(lines);
 
-    if (lines.isNotEmpty) {
+    if (lines.isNotEmpty && !textStructureNext2IsChinese) {
       final markdownListItemRegex = RegExp(r'^\s*([*\-+]|\d+\.)\s+(.+)$');
       final markdownListItemMatch = markdownListItemRegex.firstMatch(lines[0]);
       if (markdownListItemMatch != null) {
@@ -795,13 +989,29 @@ class TranslateTextChunk {
         );
         modifiedLines.add('');
         modifiedLines.add(translationChunkId);
+
+        if (textStructureNext != null &&
+            textStructureNext.type != TextStructureType.blankLine) {
+          modifiedLines.add('');
+        }
       }
     }
   }
 
   /// 分块表格（翻译 ID 占位）
-  void _chunkMarkdownTable(TextStructure textStructure) {
+  /// - [index] 当前数据索引
+  /// - [textStructure] 当前数据
+  /// - [textStructureList] 所有数据
+  void _chunkMarkdownTable(
+    int index,
+    TextStructure textStructure,
+    List<TextStructure> textStructureList,
+  ) {
     final lines = textStructure.originalText;
+    final textStructureNext =
+        index == textStructureList.length - 1
+            ? null
+            : textStructureList[index + 1];
 
     /// 至少 3 行（表头 分割 主内容）
     if (lines.length >= 3) {
@@ -871,11 +1081,28 @@ class TranslateTextChunk {
         modifiedLines.add('$indentText$modifiedTableData');
       }
     }
+
+    if (textStructureNext != null &&
+        textStructureNext.type != TextStructureType.blankLine) {
+      modifiedLines.add('');
+    }
   }
 
-  /// 分块 Markdown 自定义 aside/admonition 语法（存在类型、标题）
-  void _chunkMarkdownCustomAsideTypeTitle(TextStructure textStructure) {
+  /// 分块 Markdown 自定义 aside/admonition 语法（存在类型、标题）（翻译 ID 占位）
+  /// - [index] 当前数据索引
+  /// - [textStructure] 当前数据
+  /// - [textStructureList] 所有数据
+  void _chunkMarkdownCustomAsideTypeTitle(
+    int index,
+    TextStructure textStructure,
+    List<TextStructure> textStructureList,
+  ) {
     final lines = textStructure.originalText;
+    final textStructureNext =
+        index == textStructureList.length - 1
+            ? null
+            : textStructureList[index + 1];
+
     if (lines.isNotEmpty) {
       final content = lines[0];
 
@@ -909,12 +1136,18 @@ class TranslateTextChunk {
           modifiedLines.add(
             '${" " * _indentCount(content)}$delimiter$type $translationChunkId',
           );
+
+          if (textStructureNext != null &&
+              textStructureNext.type != TextStructureType.blankLine) {
+            modifiedLines.add('');
+          }
         }
       }
     }
   }
 
-  /// 分块 Liquid `{% tab "标题" %}` 语法
+  /// 分块 Liquid `{% tab "标题" %}` 语法（翻译 ID 占位）
+  /// - [textStructure] 当前数据
   void _chunkLiquidTab(TextStructure textStructure) {
     final lines = textStructure.originalText;
     if (lines.isNotEmpty) {
@@ -1051,6 +1284,11 @@ class TranslateTextChunk {
     final match = regex.firstMatch(content);
     final indentCount = match?.end ?? 0;
     return indentCount;
+  }
+
+  bool _isChinese(String content) {
+    final chineseRegex = RegExp(r'[\u4e00-\u9fa5]');
+    return chineseRegex.hasMatch(content);
   }
 }
 
