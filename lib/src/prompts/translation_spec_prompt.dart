@@ -37,4 +37,5 @@ The following resources might help when writing layout code, [Layout tutorial][]
 [核心 Widget 目录][Widget catalog]
 ```
 </EXAMPLE>
-'''.trim();
+'''
+        .trim();

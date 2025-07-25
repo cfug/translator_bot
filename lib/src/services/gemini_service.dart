@@ -1,8 +1,8 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:http/http.dart' as http;
 
-import 'prompts/prompts.dart';
-import 'translate_text_chunk.dart';
+import '../prompts/prompts.dart';
+import 'translation_service/translation_service.dart';
 
 class GeminiService {
   GeminiService({required String apiKey, required http.Client httpClient})
@@ -38,8 +38,8 @@ class GeminiService {
     /// 开始处理
     final chat = _translatorModel.startChat();
 
-    /// 分块翻译
-    final outputText = await TranslateTextChunk(chat, text).run();
+    /// 运行翻译
+    final outputText = await TranslationService(chat, text).run();
 
     /// 总消耗 Token
     final countTokensResponse = await _translatorModel.countTokens(

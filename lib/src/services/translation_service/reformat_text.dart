@@ -4,12 +4,11 @@ class ReformatText {
 
   String text;
 
-  String all() =>
-      markdownListItem()
-          .markdownThreeColons()
-          .liquidComment()
-          .removeTopMetadataLineBreaks()
-          .text;
+  String all() => markdownListItem()
+      .markdownThreeColons()
+      .liquidComment()
+      .removeTopMetadataLineBreaks()
+      .text;
 
   /// Markdown 列表项
   ///

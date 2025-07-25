@@ -141,4 +141,5 @@ final chineseTypographyGuidePrompt =
 
 ### 「您」和「你」的用法
 在文档的翻译中应避免使用「您」，应只使用「你」，以表示与开发者平等沟通的意味。
-'''.trim();
+'''
+        .trim();

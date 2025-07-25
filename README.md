@@ -4,8 +4,8 @@
 <h1 align="center">CFUG Translator Bot</h1>
 
 <p align="center">
-  <img alt="Translator Bot v0.0.1" src="https://img.shields.io/badge/Translator Bot%20v0.0.1-159067?style=flat&logo=devbox&logoColor=FFFFFF"/>
-  <a href="https://dart.dev/"><img alt="Dart v3.7.2" src="https://img.shields.io/badge/Dart%20v3.7.2-1A70B3?style=flat&logo=dart&logoColor=FFFFFF"/></a> 
+  <img alt="Translator Bot v0.0.2" src="https://img.shields.io/badge/Translator Bot%20v0.0.2-159067?style=flat&logo=devbox&logoColor=FFFFFF"/>
+  <a href="https://dart.dev/"><img alt="Dart v3.8.1" src="https://img.shields.io/badge/Dart%20v3.8.1-1A70B3?style=flat&logo=dart&logoColor=FFFFFF"/></a> 
   <a href="https://aistudio.google.com/"><img src="https://img.shields.io/badge/Gemini%202.0%20flash-735E92?style=flat&logo=googlegemini&logoColor=FFFFFF" alt="Gemini 2.0 flash" /></a>
 </p>
 
@@ -44,5 +44,6 @@ GEMINI_API_KEY = xxxxxxx
 
 调用以下指令：
 ```bash
+# 例如：dart bin/translator.dart --dry-run --repository cfug/flutter.cn --actionId 0 --issueId 0 --commentId 0 --filePath ./src/content/perf/appendix.md
 $ dart bin/translator.dart --dry-run --repository username/repo --actionId 0 --issueId 0 --commentId 0 --filePath xxxxxx
 ```

@@ -7,4 +7,5 @@ final glossaryPrompt =
 - widget
 - package
 - bug
-'''.trim();
+'''
+        .trim();

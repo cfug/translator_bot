@@ -4,8 +4,8 @@ import 'package:args/args.dart';
 import 'package:github/github.dart';
 import 'package:http/http.dart' as http;
 import 'package:cfug_translator_bot/src/common.dart';
-import 'package:cfug_translator_bot/src/gemini.dart';
-import 'package:cfug_translator_bot/src/github.dart';
+import 'package:cfug_translator_bot/src/services/gemini_service.dart';
+import 'package:cfug_translator_bot/src/services/github_service.dart';
 import 'package:cfug_translator_bot/translator.dart';
 
 void main(List<String> arguments) async {

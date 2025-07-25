@@ -4,8 +4,8 @@ import 'package:github/github.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 import 'src/common.dart';
-import 'src/gemini.dart';
-import 'src/github.dart';
+import 'src/services/gemini_service.dart';
+import 'src/services/github_service.dart';
 
 /// Bot 任务状态
 enum BotState { none, running, success, error }
@@ -105,9 +105,8 @@ class Translator {
     }
 
     logger.log('------ Translated Text ------');
-    final translatedTextLines =
-        translatedText.split('\n').where((l) => l.trim().isNotEmpty).toList();
-    for (final line in translatedTextLines.take(15)) {
+    final translatedTextLines = translatedText.split('\n');
+    for (final line in translatedTextLines.take(30)) {
       logger.log(line);
     }
     if (translatedTextLines.length > 15) {
