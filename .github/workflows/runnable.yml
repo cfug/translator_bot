@@ -1,0 +1,54 @@
+name: 'runnable'
+run-name: 'Runnable'
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  code-analysis:
+    name: 'Code Analysis'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - name: Prepare dependencies
+        run: |
+          dart --version
+          dart pub get
+      - name: Check Dart code formatting
+        run: |
+          dart format . -o none --set-exit-if-changed
+      - name: Analyze Dart code
+        run: |
+          dart analyze .
+
+  test:
+    needs: [code-analysis]
+    name: 'Test (Dart ${{ matrix.sdk }}) :: ${{ matrix.os }})'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        sdk: [3.8, stable]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Prepare dependencies
+        run: dart pub get
+      - name: Run tests
+        run: dart test -r github
