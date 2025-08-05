@@ -22,8 +22,8 @@ class TranslationPlaceholder {
 
   /// 在文档顶部的翻译说明
   String get translationNote =>
-      '\n:::note\n'
-      '本篇文档由 AI 翻译。\n'
+      '\n:::note\n\n'
+      '本篇文档由 AI 翻译。\n\n'
       ':::';
 
   /// 译文 ID 占位处理
@@ -246,41 +246,57 @@ class TranslationPlaceholder {
     final textStructureNext2 = index >= textStructureList.length - 2
         ? null
         : textStructureList[index + 2];
-    final textStructureNext2IsChinese =
-        textStructureNext2?.type.isChinese ?? false;
 
     /// 添加原始内容
     placeholderOriginalLines.addAll(lines);
 
-    if (lines.isNotEmpty && !textStructureNext2IsChinese) {
-      final content = lines.join('\n');
+    if (lines.isEmpty) return;
 
-      final markdownTitleRegex = RegExp(r'^\s*(#{1,6})\s*(.*?)\s*$');
-      final markdownTitleMatch = markdownTitleRegex.firstMatch(content);
+    /// 处理需要翻译的内容
+    final content = lines.join('\n');
+
+    /// 匹配标题前缀
+    final markdownTitleRegex = RegExp(r'^\s*(#{1,6})\s*(.*?)\s*$');
+
+    /// 匹配当前行标题
+    final markdownTitleMatch = markdownTitleRegex.firstMatch(content);
+    if (markdownTitleMatch == null) return;
+    final titlePrefix = markdownTitleMatch.group(1);
+    final titleText = markdownTitleMatch.group(2);
+    if (titlePrefix == null || titleText == null) return;
+
+    /// 下两行标题是否存在中文
+    final textStructureNext2IsChinese =
+        textStructureNext2?.type.isChinese ?? false;
+
+    /// 下两行标题前缀
+    String? titlePrefixNext2;
+    if (textStructureNext2 != null) {
+      final contentNext2 = textStructureNext2.originalText.join('\n');
+      final markdownTitleMatch = markdownTitleRegex.firstMatch(contentNext2);
       if (markdownTitleMatch != null) {
-        final titlePrefix = markdownTitleMatch.group(1);
-        final titleText = markdownTitleMatch.group(2);
-        if (titlePrefix == null || titleText == null) return;
-
-        /// 翻译块 ID
-        final translationChunkId = _translationChunkId();
-
-        /// 添加翻译块 ID 占位
-        translationPlaceholderData.add(
-          TranslationChunk(
-            id: translationChunkId,
-            indentCount: 0,
-            text: titleText,
-          ),
-        );
-        placeholderOriginalLines.add('');
-        placeholderOriginalLines.add('$titlePrefix $translationChunkId');
-
-        if (textStructureNext != null &&
-            textStructureNext.type != TextStructureType.blankLine) {
-          placeholderOriginalLines.add('');
-        }
+        titlePrefixNext2 = markdownTitleMatch.group(1);
       }
+    }
+
+    /// 下两行标题前缀可匹配并且为中文的情况，可匹配则跳过翻译
+    if (titlePrefix == titlePrefixNext2 && textStructureNext2IsChinese) {
+      return;
+    }
+
+    /// 翻译块 ID
+    final translationChunkId = _translationChunkId();
+
+    /// 添加翻译块 ID 占位
+    translationPlaceholderData.add(
+      TranslationChunk(id: translationChunkId, indentCount: 0, text: titleText),
+    );
+    placeholderOriginalLines.add('');
+    placeholderOriginalLines.add('$titlePrefix $translationChunkId');
+
+    if (textStructureNext != null &&
+        textStructureNext.type != TextStructureType.blankLine) {
+      placeholderOriginalLines.add('');
     }
   }
 
