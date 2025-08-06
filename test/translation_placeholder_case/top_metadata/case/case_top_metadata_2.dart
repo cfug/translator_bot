@@ -1,12 +1,11 @@
 import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder.dart';
 
 import '../../../mock_uuid.dart';
-import '../case.dart';
+import '../../case.dart';
 
-/// 顶部元数据基础 2 - 已存在翻译说明
 class CaseTopMetadata2 implements Case {
-  @override
-  String testDescription() => '顶部元数据基础 2 - 已存在翻译说明';
+  /// 顶部元数据基础 2 - 已存在翻译说明
+  const CaseTopMetadata2();
 
   @override
   String testText() {
@@ -26,7 +25,7 @@ ${TranslationPlaceholder(MockUuid()).translationNote}
   }
 
   @override
-  String expectData() {
+  String expectText() {
     return '''
 ---
 # title: More thoughts about performance
