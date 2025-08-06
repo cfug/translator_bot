@@ -1,10 +1,9 @@
 import '../../../mock_uuid.dart';
-import '../case.dart';
+import '../../case.dart';
 
-/// Markdown 列表项基础 1
 class CaseMarkdownListItem1 implements Case {
-  @override
-  String testDescription() => 'Markdown 列表项基础 1';
+  /// Markdown 列表项基础 1
+  const CaseMarkdownListItem1();
 
   @override
   String testText() {
@@ -61,7 +60,7 @@ class CaseMarkdownListItem1 implements Case {
   }
 
   @override
-  String expectData() {
+  String expectText() {
     return '''
 - Demo 1
 

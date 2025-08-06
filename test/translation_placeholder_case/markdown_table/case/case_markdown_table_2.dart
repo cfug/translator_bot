@@ -1,9 +1,8 @@
-import '../case.dart';
+import '../../case.dart';
 
-/// Markdown 表格基础 2 - 跳过翻译
 class CaseMarkdownTable2 implements Case {
-  @override
-  String testDescription() => 'Markdown 表格基础 2 - 跳过翻译';
+  /// Markdown 表格基础 2 - 跳过翻译
+  const CaseMarkdownTable2();
 
   @override
   String testText() {
@@ -17,7 +16,7 @@ class CaseMarkdownTable2 implements Case {
   }
 
   @override
-  String expectData() {
+  String expectText() {
     return '''
 | <t>Title</t><t>测试</t> | Title |
 | --- | --- |

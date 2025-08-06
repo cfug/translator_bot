@@ -1,10 +1,9 @@
 import '../../../mock_uuid.dart';
-import '../case.dart';
+import '../../case.dart';
 
-/// Markdown 自定义 aside/admonition 语法（存在类型、标题）基础 1
 class CaseMarkdownCustomAsideTypeTitle1 implements Case {
-  @override
-  String testDescription() => 'Markdown 自定义 aside/admonition 语法（存在类型、标题）基础 1';
+  /// Markdown 自定义 aside/admonition 语法（存在类型、标题）基础 1
+  const CaseMarkdownCustomAsideTypeTitle1();
 
   @override
   String testText() {
@@ -16,7 +15,7 @@ TextTextTextText
   }
 
   @override
-  String expectData() {
+  String expectText() {
     return '''
 <!-- :::note Title -->
 :::note ${MockUuid.translationChunkId}

@@ -1,12 +1,11 @@
 import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder.dart';
 
 import '../../../mock_uuid.dart';
-import '../case.dart';
+import '../../case.dart';
 
-/// 顶部元数据带列表项 1
 class CaseTopMetadataListItem1 implements Case {
-  @override
-  String testDescription() => '顶部元数据带列表项 1';
+  /// 顶部元数据带列表项 1
+  const CaseTopMetadataListItem1();
 
   @override
   String testText() {
@@ -23,7 +22,7 @@ description: What is performance, and why is performance important
   }
 
   @override
-  String expectData() {
+  String expectText() {
     return '''
 ---
 # title: More thoughts about performance
