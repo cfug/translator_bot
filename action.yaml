@@ -72,7 +72,7 @@ runs:
     - if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
       uses: dart-lang/setup-dart@v1
       with:
-        sdk: '3.7'
+        sdk: '3.8'
     - name: Prepare dependencies
       if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
       run: |
