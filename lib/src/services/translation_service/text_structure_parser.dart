@@ -6,7 +6,7 @@ import 'enum.dart';
 abstract final class TextStructureParser {
   /// 解析文本结构数据（按行识别）
   ///
-  /// TODO: 用 AST tree 来实现
+  /// TODO: 用 AST tree 来实现，拆分识别特征，避免写在一块
   ///
   /// - [content] 需要结构处理的内容
   static List<TextStructure> parse(String content) {
@@ -131,6 +131,24 @@ abstract final class TextStructureParser {
       }
       /* END */
 
+      /* BEGIN 单行 Markdown 分割横线 */
+      /// `---`、`- - -`、`* * *`、`_ _ _`
+      final markdownHorizontalRuleRegex = RegExp(
+        r'^\s*([-*_])(?:\s*\1){2,}\s*$',
+      );
+      if (markdownHorizontalRuleRegex.hasMatch(lineTrim)) {
+        textStructureList.add(
+          TextStructure(
+            type: TextStructureType.markdownHorizontalRule,
+            start: i,
+            end: i,
+            originalText: [line],
+          ),
+        );
+        continue;
+      }
+      /* END */
+
       /* BEGIN Markdown 列表项 - 多行内容*/
       /// `* xxx`、`- xxx`、`+ xxx`、`1. xxx`
       final markdownListItemRegex = RegExp(r'^\s*([*\-+]|\d+\.)\s+(.+)$');
@@ -232,24 +250,6 @@ abstract final class TextStructureParser {
         textStructureList.add(
           TextStructure(
             type: TextStructureType.markdownImage,
-            start: i,
-            end: i,
-            originalText: [line],
-          ),
-        );
-        continue;
-      }
-      /* END */
-
-      /* BEGIN 单行 Markdown 分割横线 */
-      /// `---`、`- - -`、`* * *`、`_ _ _`
-      final markdownHorizontalRuleRegex = RegExp(
-        r'^\s*([-*_])(?:\s*\1){2,}\s*$',
-      );
-      if (markdownHorizontalRuleRegex.hasMatch(lineTrim)) {
-        textStructureList.add(
-          TextStructure(
-            type: TextStructureType.markdownHorizontalRule,
             start: i,
             end: i,
             originalText: [line],
