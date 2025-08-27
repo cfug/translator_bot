@@ -4,8 +4,8 @@
 <h1 align="center">CFUG Translator Bot</h1>
 
 <p align="center">
-  <img alt="Translator Bot v0.0.2" src="https://img.shields.io/badge/Translator Bot%20v0.0.2-159067?style=flat&logo=devbox&logoColor=FFFFFF"/>
-  <a href="https://dart.dev/"><img alt="Dart v3.8" src="https://img.shields.io/badge/Dart%20v3.8-1A70B3?style=flat&logo=dart&logoColor=FFFFFF"/></a> 
+  <img alt="Translator Bot v0.0.3" src="https://img.shields.io/badge/Translator Bot%20v0.0.3-159067?style=flat&logo=devbox&logoColor=FFFFFF"/>
+  <a href="https://dart.dev/"><img alt="Dart v3.9" src="https://img.shields.io/badge/Dart%20v3.9-1A70B3?style=flat&logo=dart&logoColor=FFFFFF"/></a> 
   <a href="https://aistudio.google.com/"><img src="https://img.shields.io/badge/Gemini%202.0%20flash-735E92?style=flat&logo=googlegemini&logoColor=FFFFFF" alt="Gemini 2.0 flash" /></a>
 </p>
 
