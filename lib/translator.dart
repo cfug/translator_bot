@@ -106,10 +106,12 @@ class Translator {
 
     logger.log('------ Translated Text ------');
     final translatedTextLines = translatedText.split('\n');
-    for (final line in translatedTextLines.take(30)) {
+    for (final line in translatedTextLines.take(
+      dryRun ? translatedTextLines.length : 30,
+    )) {
       logger.log(line);
     }
-    if (translatedTextLines.length > 15) {
+    if (!dryRun && translatedTextLines.length > 30) {
       logger.log('...');
     }
     logger.log('-----------------------------');

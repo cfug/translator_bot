@@ -1,4 +1,4 @@
-import '../enum.dart';
+import '../../enum.dart';
 
 /// 文本结构
 class TextStructure {

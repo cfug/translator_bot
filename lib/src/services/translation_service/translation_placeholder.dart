@@ -1,6 +1,6 @@
 import 'package:uuid/uuid.dart';
 
-import 'models/text_structure_model.dart';
+import 'text_structure_parser/models/text_structure_model.dart';
 import 'models/translation_chunk_model.dart';
 import 'enum.dart';
 

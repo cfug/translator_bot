@@ -25,7 +25,7 @@ runs:
 
     - name: Check out
       if: steps.entry.outputs.valid == 'true'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set GitHub Path
       if: steps.entry.outputs.valid == 'true'
@@ -72,7 +72,7 @@ runs:
     - if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
       uses: dart-lang/setup-dart@v1
       with:
-        sdk: '3.8'
+        sdk: '3.10'
     - name: Prepare dependencies
       if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
       run: |
