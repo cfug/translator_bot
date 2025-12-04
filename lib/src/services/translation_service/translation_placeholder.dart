@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 
+import '../../utils.dart';
 import 'text_structure_parser/models/text_structure_model.dart';
 import 'models/translation_chunk_model.dart';
 import 'enum.dart';
@@ -7,6 +8,7 @@ import 'enum.dart';
 /// 译文占位符处理
 class TranslationPlaceholder {
   /// 译文占位符处理
+  /// TODO: 重构，拆分占位处理（一种结构可以对应多种特征的识别处理）
   TranslationPlaceholder(this.uuid);
 
   final Uuid uuid;
@@ -57,6 +59,8 @@ class TranslationPlaceholder {
           );
         case TextStructureType.liquid1:
           _chunkLiquidTab(textStructure);
+        case TextStructureType.htmlTag:
+          _chunkHtmlTagTab(textStructure);
         case _:
           placeholderOriginalLines.addAll(textStructure.originalText);
       }
@@ -537,6 +541,53 @@ class TranslationPlaceholder {
             );
             placeholderOriginalLines.add(
               '${" " * _indentCount(content)}{% tab "$translationChunkId" %}',
+            );
+            return;
+          }
+        }
+      }
+      placeholderOriginalLines.addAll(lines);
+    }
+  }
+
+  /// 分块 单行 HTML 标签 `<Tab name="标题">` 语法（译文 ID 占位）
+  /// - [textStructure] 当前数据
+  void _chunkHtmlTagTab(TextStructure textStructure) {
+    final lines = textStructure.originalText;
+    if (lines.isNotEmpty) {
+      final content = lines[0];
+
+      // 判定 `<Tab name="标题">`
+      if (content.trimLeft().startsWith('<Tab')) {
+        /// `<Tab name="标题">`
+        final htmlTabRegex = RegExp(
+          r'''<Tab\s+name=["']([^"']+)["'][^>]*>(.*)''',
+        );
+        if (htmlTabRegex.hasMatch(content)) {
+          final match = htmlTabRegex.firstMatch(content);
+          final title = match?.group(1) ?? '';
+          final other = match?.group(2) ?? '';
+          final titleTrim = title.trim();
+
+          if (titleTrim != '' && !Utils.isChinese(titleTrim)) {
+            /// 添加注释原始内容
+            placeholderOriginalLines.add(
+              '${" " * _indentCount(content)}<!-- ${content.trimLeft()} -->',
+            );
+
+            /// 翻译块 ID
+            final translationChunkId = _translationChunkId();
+
+            /// 添加翻译块 ID 占位
+            translationPlaceholderData.add(
+              TranslationChunk(
+                id: translationChunkId,
+                indentCount: 0,
+                text: titleTrim,
+              ),
+            );
+            placeholderOriginalLines.add(
+              '${" " * _indentCount(content)}<Tab name="$translationChunkId">$other',
             );
             return;
           }
