@@ -37,5 +37,26 @@ The following resources might help when writing layout code, [Layout tutorial][]
 [核心 Widget 目录][Widget catalog]
 ```
 </EXAMPLE>
+
+### Markdown 斜体转换为加粗
+[规则]:
+将原文中 Markdown 斜体（使用单个星号 `*` 或 下划线 `_` 包围的文本）转换为加粗（使用双星号 `**` 包围的文本）
+被包围的文本左右需要与其他文本间隔一个空格。
+
+以下给你提供一些示例：
+<EXAMPLE>
+[输入]：
+```
+When you want to _deploy_ your app to the App Store,
+you'll need to upgrade your personal Apple Developer account to
+a professional account.
+```
+
+[输出]:
+```
+当你想要将你的应用 **部署** 到 App Store 时，
+你需要将你的个人 Apple Developer 帐户升级到专业帐户。
+```
+</EXAMPLE>
 '''
         .trim();

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.5
+
+- Convert Markdown italic to bold (prompt). [#6](https://github.com/cfug/translator_bot/pull/6)
+
 ## 0.0.4
 
 - Bump Dart to 3.10 [#4](https://github.com/cfug/translator_bot/pull/4)
