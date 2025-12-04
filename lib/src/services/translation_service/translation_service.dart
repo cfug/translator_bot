@@ -4,7 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import 'models/translation_chunk_model.dart';
 import 'reformat_text.dart';
-import 'text_structure_parser.dart';
+import 'text_structure_parser/text_structure_parser.dart';
 import 'translation_placeholder.dart';
 
 /// 翻译服务
@@ -26,7 +26,8 @@ class TranslationService {
     final content = ReformatText(text).all();
 
     /// 解析文本结构
-    final structures = TextStructureParser.parse(content);
+    final parser = TextStructureParser();
+    final structures = parser.parse(content);
 
     /// 处理译文占位 ID
     final translationPlaceholder = TranslationPlaceholder(const Uuid())
