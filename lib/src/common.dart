@@ -45,5 +45,3 @@ class Logger {
     print(message);
   }
 }
-
-const emojiGap = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';

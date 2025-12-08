@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:github/github.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
+import 'src/utils.dart';
 import 'src/common.dart';
 import 'src/services/gemini_service.dart';
 import 'src/services/github_service.dart';
@@ -98,7 +99,7 @@ class Translator {
       await updateBotStateIssueComment(
         BotState.error,
         '💬 AI 生成或处理发生错误 \n'
-        '$emojiGap**Github Action:** $actionHtmlUrl \n',
+        '${Utils.emojiGap}**Github Action:** $actionHtmlUrl \n',
       );
       stderr.writeln('❌ error: $e');
       exit(1);
@@ -149,7 +150,7 @@ class Translator {
         await updateBotStateIssueComment(
           BotState.error,
           '💬 Github 运行错误 \n'
-          '$emojiGap**Github Action:** $actionHtmlUrl \n',
+          '${Utils.emojiGap}**Github Action:** $actionHtmlUrl \n',
         );
         stderr.writeln('❌ 分支创建失败');
         exit(1);
@@ -174,7 +175,7 @@ class Translator {
       await updateBotStateIssueComment(
         BotState.error,
         '💬 Github 运行错误 \n'
-        '$emojiGap**Github Action:** $actionHtmlUrl \n',
+        '${Utils.emojiGap}**Github Action:** $actionHtmlUrl \n',
       );
       stderr.writeln('❌ 指定文件修改失败');
       exit(1);
@@ -207,7 +208,7 @@ class Translator {
         body:
             '🪄 **$botTitle** \n'
             '💬 本内容由 AI 翻译，\n'
-            '$emojiGap请检查格式以及翻译内容是否有误。\n'
+            '${Utils.emojiGap}请检查格式以及翻译内容是否有误。\n'
             '\n'
             '${footerTriggeredComment(isAt: true)} \n $moreInfo',
       );
@@ -215,7 +216,7 @@ class Translator {
       await updateBotStateIssueComment(
         BotState.error,
         '💬 Github 运行错误 \n'
-        '$emojiGap**Github Action:** $actionHtmlUrl \n',
+        '${Utils.emojiGap}**Github Action:** $actionHtmlUrl \n',
       );
       stderr.writeln('❌ PR 创建失败');
       exit(1);
@@ -297,7 +298,7 @@ class Translator {
       await updateBotStateIssueComment(
         BotState.error,
         '💬 请指定一个有效的文件 \n'
-        '$emojiGap**Github Action:** $actionHtmlUrl \n',
+        '${Utils.emojiGap}**Github Action:** $actionHtmlUrl \n',
       );
       stderr.writeln('❓ 请指定一个有效的文件');
       exit(1);
@@ -318,7 +319,7 @@ class Translator {
         await updateBotStateIssueComment(
           BotState.error,
           '💬 未找到指定文件 \n'
-          '$emojiGap**Github Action:** $actionHtmlUrl \n',
+          '${Utils.emojiGap}**Github Action:** $actionHtmlUrl \n',
         );
         stderr.writeln('❓ 未找到指定文件');
         exit(1);
