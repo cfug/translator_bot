@@ -6,15 +6,16 @@ import '../text_parser.dart';
 /// 单行 Markdown 自定义 Aside 语法 解析器
 /// `:::类型 标题`
 class MarkdownCustomAsideTypeParser implements TextParser {
-  static final regex = RegExp(r'^\s*(:::)\s*([a-zA-Z0-9-]*)\s*(.*)$');
-
   @override
   int get priority => 9;
+
+  static RegExp regex = RegExp(r'^\s*(:::)\s*([a-zA-Z0-9-]*)\s*(.*)$');
+  static bool hasMatch(String line) => regex.hasMatch(line);
 
   @override
   ParseResult parse(ParseContext context) {
     final lineTrim = context.currentLineTrim;
-    if (regex.hasMatch(lineTrim)) {
+    if (hasMatch(lineTrim)) {
       final match = regex.firstMatch(lineTrim);
       // final delimiter = match!.group(1)!; // 必为 :::
       final type = match?.group(2)?.trim() != '' ? match?.group(2) : null;

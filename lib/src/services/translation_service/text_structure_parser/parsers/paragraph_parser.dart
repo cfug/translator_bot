@@ -2,6 +2,7 @@ import '../../../../utils.dart';
 import '../models/text_structure_model.dart';
 import '../../enum.dart';
 import '../text_parser.dart';
+import 'blank_line_parser.dart';
 import 'html_comment_parser.dart';
 import 'html_tag_parser.dart';
 import 'liquid_1_parser.dart';
@@ -21,6 +22,24 @@ class ParagraphParser implements TextParser {
   @override
   int get priority => 16;
 
+  static bool notParagraphHasMatch(String? line) {
+    return line == null ||
+        BlankLineParser.hasMatch(line) ||
+        MarkdownCodeBlockParser.hasMatch(line) ||
+        MarkdownListItemParser.hasMatch(line) ||
+        MarkdownTitleParser.hasMatch(line) ||
+        MarkdownDefineLinkParser.hasMatch(line) ||
+        MarkdownImageParser.hasMatch(line) ||
+        MarkdownHorizontalRuleParser.hasMatch(line) ||
+        MarkdownTableParser.hasMatch(line) ||
+        MarkdownCustomAsideTypeParser.hasMatch(line) ||
+        MarkdownCustom1Parser.hasMatch(line) ||
+        MarkdownCustom2Parser.hasMatch(line) ||
+        Liquid1Parser.hasMatch(line) ||
+        HtmlTagParser.hasMatch(line) ||
+        HtmlCommentParser.beginHasMatch(line);
+  }
+
   @override
   ParseResult parse(ParseContext context) {
     final lineNextTrim = context.nextLineTrim;
@@ -37,25 +56,8 @@ class ParagraphParser implements TextParser {
       /// 判定是否结束段落
       var isParagraphEnd = false;
 
-      /// 下一行是否可判定为上方的其他类型
-      final isNextLineNotParagraph =
-          lineNextTrim == null ||
-          lineNextTrim == '' ||
-          lineNextTrim.startsWith(MarkdownCodeBlockParser.delimiter) ||
-          MarkdownListItemParser.regex.hasMatch(lineNextTrim) ||
-          MarkdownTitleParser.regex.hasMatch(lineNextTrim) ||
-          MarkdownDefineLinkParser.regex.hasMatch(lineNextTrim) ||
-          MarkdownImageParser.regex.hasMatch(lineNextTrim) ||
-          MarkdownHorizontalRuleParser.regex.hasMatch(lineNextTrim) ||
-          MarkdownTableParser.regex.hasMatch(lineNextTrim) ||
-          MarkdownCustomAsideTypeParser.regex.hasMatch(lineNextTrim) ||
-          MarkdownCustom1Parser.regex.hasMatch(lineNextTrim) ||
-          MarkdownCustom2Parser.regex.hasMatch(lineNextTrim) ||
-          Liquid1Parser.regex.hasMatch(lineNextTrim) ||
-          (HtmlTagParser.regex.hasMatch(lineNextTrim) &&
-              !lineNextTrim.startsWith('<br')) ||
-          HtmlCommentParser.beginRegex.hasMatch(lineNextTrim);
-
+      /// 下一行是否可判定为其他类型
+      final isNextLineNotParagraph = notParagraphHasMatch(lineNextTrim);
       if (isNextLineNotParagraph) {
         isParagraphEnd = true;
       }

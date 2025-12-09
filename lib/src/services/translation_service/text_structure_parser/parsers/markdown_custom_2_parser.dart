@@ -5,15 +5,15 @@ import '../text_parser.dart';
 /// 单行 Markdown 自定义语法2 `<?xxx` 解析器
 /// `<?xxx`
 class MarkdownCustom2Parser implements TextParser {
-  static final regex = RegExp(r'^\s*\<\?');
-
   @override
   int get priority => 11;
+
+  static bool hasMatch(String line) => RegExp(r'^\s*\<\?').hasMatch(line);
 
   @override
   ParseResult parse(ParseContext context) {
     final lineTrim = context.currentLineTrim;
-    if (regex.hasMatch(lineTrim)) {
+    if (hasMatch(lineTrim)) {
       context.addStructure(
         TextStructure(
           type: TextStructureType.markdownCustom2,

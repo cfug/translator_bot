@@ -5,16 +5,16 @@ import '../text_parser.dart';
 /// Markdown 代码块解析器
 /// ``` 开头和结尾的部分
 class MarkdownCodeBlockParser implements TextParser {
-  static const delimiter = '```';
-
   @override
   int get priority => 2;
+
+  static bool hasMatch(String line) => line.startsWith('```');
 
   @override
   ParseResult parse(ParseContext context) {
     final lineTrim = context.currentLineTrim;
 
-    if (lineTrim.startsWith(delimiter)) {
+    if (hasMatch(lineTrim)) {
       if (context.currentType != TextStructureType.markdownCodeBlock) {
         /// Markdown 代码块 - 开始
         context.currentType = TextStructureType.markdownCodeBlock;

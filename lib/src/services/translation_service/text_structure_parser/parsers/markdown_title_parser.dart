@@ -6,14 +6,15 @@ import '../text_parser.dart';
 /// Markdown 标题解析器
 /// `# xxx`
 class MarkdownTitleParser implements TextParser {
-  static final regex = RegExp(r'^\s*#{1,6}\s+.+$');
-
   @override
   int get priority => 6;
 
+  static bool hasMatch(String line) =>
+      RegExp(r'^\s*#{1,6}\s+.+$').hasMatch(line);
+
   @override
   ParseResult parse(ParseContext context) {
-    if (regex.hasMatch(context.currentLineTrim)) {
+    if (hasMatch(context.currentLineTrim)) {
       final isChinese = Utils.isChinese(context.currentLine);
       context.addStructure(
         TextStructure(

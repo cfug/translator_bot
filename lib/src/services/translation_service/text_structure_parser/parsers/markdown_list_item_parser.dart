@@ -7,17 +7,18 @@ import 'markdown_code_block_parser.dart';
 /// Markdown 列表项 - 多行内容 解析器
 /// `* xxx`、`- xxx`、`+ xxx`、`1. xxx`
 class MarkdownListItemParser implements TextParser {
-  static final regex = RegExp(r'^\s*([*\-+]|\d+\.)\s+(.+)$');
-
   @override
   int get priority => 5;
+
+  static bool hasMatch(String line) =>
+      RegExp(r'^\s*([*\-+]|\d+\.)\s+(.+)$').hasMatch(line);
 
   @override
   ParseResult parse(ParseContext context) {
     final lineTrim = context.currentLineTrim;
     final lineNextTrim = context.nextLineTrim;
 
-    if (regex.hasMatch(lineTrim)) {
+    if (hasMatch(lineTrim)) {
       /// 列表项开始
       if (context.currentType != TextStructureType.markdownListItem) {
         context.currentType = TextStructureType.markdownListItem;
@@ -34,8 +35,8 @@ class MarkdownListItemParser implements TextParser {
         /// 下一行是否 非当前列表项内容
         final isNextLineNotCurrentText =
             lineNextTrim == '' ||
-            lineNextTrim.startsWith(MarkdownCodeBlockParser.delimiter) ||
-            regex.hasMatch(lineNextTrim);
+            MarkdownCodeBlockParser.hasMatch(lineNextTrim) ||
+            hasMatch(lineNextTrim);
 
         if (isNextLineNotCurrentText) {
           isListItemEnd = true;

@@ -5,17 +5,18 @@ import '../text_parser.dart';
 
 /// Markdown 表格 解析器
 class MarkdownTableParser implements TextParser {
-  static final regex = RegExp(r'^\s*(\S.*?\|.*\S)\s*$');
-
   @override
   int get priority => 15;
+
+  static bool hasMatch(String line) =>
+      RegExp(r'^\s*(\S.*?\|.*\S)\s*$').hasMatch(line);
 
   @override
   ParseResult parse(ParseContext context) {
     final lineTrim = context.currentLineTrim;
     final lineNextTrim = context.nextLineTrim;
 
-    if (regex.hasMatch(lineTrim)) {
+    if (hasMatch(lineTrim)) {
       if (context.currentType != TextStructureType.markdownTable) {
         /// Markdown 表格 - 开始
         context.currentType = TextStructureType.markdownTable;
@@ -23,7 +24,7 @@ class MarkdownTableParser implements TextParser {
         context.originalText.add(context.currentLine);
         return ParseResult.handled;
       } else {
-        if (lineNextTrim == null || !regex.hasMatch(lineNextTrim)) {
+        if (lineNextTrim == null || !hasMatch(lineNextTrim)) {
           /// Markdown 表格 - 结束
           context.originalText.add(context.currentLine);
 

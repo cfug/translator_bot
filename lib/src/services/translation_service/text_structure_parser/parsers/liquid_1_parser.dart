@@ -6,15 +6,15 @@ import '../text_parser.dart';
 /// 单行 Liquid 语法 `{% xxx` 解析器
 /// `{% xxx`
 class Liquid1Parser implements TextParser {
-  static final regex = RegExp(r'^\s*\{%');
-
   @override
   int get priority => 12;
+
+  static bool hasMatch(String line) => RegExp(r'^\s*\{%').hasMatch(line);
 
   @override
   ParseResult parse(ParseContext context) {
     final lineTrim = context.currentLineTrim;
-    if (regex.hasMatch(lineTrim)) {
+    if (hasMatch(lineTrim)) {
       final isChinese = Utils.isChinese(context.currentLine);
       context.addStructure(
         TextStructure(

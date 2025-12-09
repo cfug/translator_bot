@@ -6,17 +6,17 @@ import '../text_parser.dart';
 /// 顶部元数据解析器
 /// 从 0 行开始 `---` 开头和结尾的部分
 class TopMetadataParser implements TextParser {
-  static const delimiter = '---';
-
   @override
   int get priority => 1;
+
+  static bool hasMatch(String line) => line == '---';
 
   @override
   ParseResult parse(ParseContext context) {
     final lineTrim = context.currentLineTrim;
 
     /// 顶部元数据 - 开始
-    if (context.currentIndex == 0 && lineTrim == delimiter) {
+    if (context.currentIndex == 0 && hasMatch(lineTrim)) {
       context.currentType = TextStructureType.topMetadata;
       context.startLineIndex = context.currentIndex;
       context.originalText.add(context.currentLine);
@@ -26,7 +26,7 @@ class TopMetadataParser implements TextParser {
     /// 顶部元数据 - 结束
     if (context.currentType == TextStructureType.topMetadata &&
         context.currentIndex != 0 &&
-        lineTrim == delimiter) {
+        hasMatch(lineTrim)) {
       context.originalText.add(context.currentLine);
 
       final isChinese = Utils.isChinese(context.originalText.join());

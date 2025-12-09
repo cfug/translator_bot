@@ -5,15 +5,16 @@ import '../text_parser.dart';
 /// 单行 Markdown 图片 解析器
 /// `![xxx](xxx)`
 class MarkdownImageParser implements TextParser {
-  static final regex = RegExp(r'!\[([^\]]*)\]\s*\(\s*([^)]+)\s*\)');
-
   @override
   int get priority => 8;
+
+  static bool hasMatch(String line) =>
+      RegExp(r'!\[([^\]]*)\]\s*\(\s*([^)]+)\s*\)').hasMatch(line);
 
   @override
   ParseResult parse(ParseContext context) {
     final lineTrim = context.currentLineTrim;
-    if (regex.hasMatch(lineTrim)) {
+    if (hasMatch(lineTrim)) {
       context.addStructure(
         TextStructure(
           type: TextStructureType.markdownImage,

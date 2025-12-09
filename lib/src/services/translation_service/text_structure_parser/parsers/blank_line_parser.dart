@@ -7,9 +7,11 @@ class BlankLineParser implements TextParser {
   @override
   int get priority => 3;
 
+  static bool hasMatch(String? line) => line == '' || line == null;
+
   @override
   ParseResult parse(ParseContext context) {
-    if (context.currentLineTrim == '') {
+    if (hasMatch(context.currentLineTrim)) {
       context.addStructure(
         TextStructure(
           type: TextStructureType.blankLine,
