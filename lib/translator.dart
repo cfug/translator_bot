@@ -133,7 +133,6 @@ class Translator {
         '\n'
         '- **Github Action:** $actionHtmlUrl \n'
         '- **消耗 Token 总数:** $totalTokenCount \n'
-        '  **参考 Token 限制:** 1000000/分钟 \n'
         '\n'
         '\n</details>';
 

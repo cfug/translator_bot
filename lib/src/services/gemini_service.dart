@@ -2,6 +2,7 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:http/http.dart' as http;
 
 import '../prompts/prompts.dart';
+import 'translation_service/models/translation_chunk_model.dart';
 import 'translation_service/translation_service.dart';
 
 class GeminiService {
@@ -10,16 +11,22 @@ class GeminiService {
         model: translatorModel,
         apiKey: apiKey,
         systemInstruction: Content.system(translatorPrompt),
+        // TODO: 是否需要进行思考
+        // "generationConfig": {
+        //   "thinkingConfig": {
+        //     "thinkingBudget": 0
+        //   }
+        // }
         generationConfig: GenerationConfig(
-          maxOutputTokens: 8192,
           temperature: 0.2,
-          topP: 0.2,
+          // topP: 0.2,
           responseMimeType: 'application/json',
+          responseSchema: translationChunkResponseSchema,
         ),
         httpClient: httpClient,
       );
 
-  static const String translatorModel = 'models/gemini-2.0-flash';
+  static const String translatorModel = 'models/gemini-2.5-flash';
 
   final GenerativeModel _translatorModel;
 

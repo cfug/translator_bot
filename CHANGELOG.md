@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.6
+
+- Model gemini-2.0-flash -> gemini-2.5-flash
+
 ## 0.0.5
 
 - Convert Markdown italic to bold (prompt). [#6](https://github.com/cfug/translator_bot/pull/6)

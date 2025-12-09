@@ -1,3 +1,5 @@
+import 'package:google_generative_ai/google_generative_ai.dart' show Schema;
+
 /// 翻译块数据
 class TranslationChunk {
   /// 翻译块数据
@@ -58,3 +60,15 @@ class TranslationChunk {
   @override
   int get hashCode => Object.hashAll([id, indentCount, text]);
 }
+
+final translationChunkResponseSchema = Schema.array(
+  nullable: false,
+  items: Schema.object(
+    requiredProperties: ['id', 'indentCount', 'text'],
+    properties: {
+      'id': Schema.string(nullable: false),
+      'indentCount': Schema.integer(nullable: false),
+      'text': Schema.string(nullable: false),
+    },
+  ),
+);
