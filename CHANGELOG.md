@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.7
+
+- Bump Dart to 3.11
+
 ## 0.0.6
 
 - Model gemini-2.0-flash -> gemini-2.5-flash

@@ -37,7 +37,7 @@ runs:
     - name: Check comment pattern and extract path
       if: steps.entry.outputs.valid == 'true'
       id: extract-comment
-      uses: actions/github-script@v6
+      uses: actions/github-script@v8
       with:
         github-token: ${{ inputs.github_token }}
         script: |
@@ -72,7 +72,7 @@ runs:
     - if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
       uses: dart-lang/setup-dart@v1
       with:
-        sdk: '3.10'
+        sdk: '3.11'
     - name: Prepare dependencies
       if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
       run: |
