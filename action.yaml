@@ -25,7 +25,7 @@ runs:
 
     - name: Check out
       if: steps.entry.outputs.valid == 'true'
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
     - name: Set GitHub Path
       if: steps.entry.outputs.valid == 'true'
@@ -37,7 +37,7 @@ runs:
     - name: Check comment pattern and extract path
       if: steps.entry.outputs.valid == 'true'
       id: extract-comment
-      uses: actions/github-script@v8
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
       with:
         github-token: ${{ inputs.github_token }}
         script: |
@@ -70,7 +70,7 @@ runs:
           }
 
     - if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
-      uses: dart-lang/setup-dart@v1
+      uses: dart-lang/setup-dart@2bd11704788983a6a210731656d0042e2df8b2c1
       with:
         sdk: '3.11'
     - name: Prepare dependencies

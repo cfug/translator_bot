@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.8
+
+- Supply chain security.
+
 ## 0.0.7
 
 - Bump Dart to 3.11
