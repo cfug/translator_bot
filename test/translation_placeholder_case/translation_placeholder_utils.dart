@@ -1,6 +1,6 @@
 import 'package:cfug_translator_bot/src/services/translation_service/reformat_text.dart';
 import 'package:cfug_translator_bot/src/services/translation_service/text_structure_parser/text_structure_parser.dart';
-import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder.dart';
+import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/translation_placeholder.dart';
 
 import '../mock_uuid.dart';
 import 'case.dart';

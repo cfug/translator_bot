@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'models/translation_chunk_model.dart';
 import 'reformat_text.dart';
 import 'text_structure_parser/text_structure_parser.dart';
-import 'translation_placeholder.dart';
+import 'translation_placeholder/translation_placeholder.dart';
 
 /// 翻译服务
 class TranslationService {
