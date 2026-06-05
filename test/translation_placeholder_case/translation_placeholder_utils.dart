@@ -1,4 +1,4 @@
-import 'package:cfug_translator_bot/src/services/translation_service/reformat_text.dart';
+import 'package:cfug_translator_bot/src/services/translation_service/reformat_text/reformat_text.dart';
 import 'package:cfug_translator_bot/src/services/translation_service/text_structure_parser/text_structure_parser.dart';
 import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/translation_placeholder.dart';
 
@@ -14,7 +14,7 @@ String getPlaceholderOriginalLines(Case testCase) {
   final testText = testCase.testText();
 
   /// 预处理文本
-  final content = ReformatText(testText).all();
+  final content = ReformatText().run(testText);
 
   /// 解析文本结构
   final parser = TextStructureParser();

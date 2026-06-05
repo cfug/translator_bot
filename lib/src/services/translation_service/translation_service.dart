@@ -3,7 +3,7 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:uuid/uuid.dart';
 
 import 'models/translation_chunk_model.dart';
-import 'reformat_text.dart';
+import 'reformat_text/reformat_text.dart';
 import 'text_structure_parser/text_structure_parser.dart';
 import 'translation_placeholder/translation_placeholder.dart';
 
@@ -23,7 +23,7 @@ class TranslationService {
   /// @return 翻译后的文本
   Future<String> run() async {
     /// 预处理文本
-    final content = ReformatText(text).all();
+    final content = ReformatText().run(text);
 
     /// 解析文本结构
     final parser = TextStructureParser();
