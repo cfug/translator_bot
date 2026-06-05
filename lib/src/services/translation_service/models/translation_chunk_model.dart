@@ -9,11 +9,11 @@ class TranslationChunk {
     required this.text,
   });
 
-  factory TranslationChunk.fromJson(Map json) {
+  factory TranslationChunk.fromJson(Map<String, dynamic> json) {
     return TranslationChunk(
-      id: json['id'],
-      indentCount: json['indentCount'],
-      text: json['text'],
+      id: json['id'] as String,
+      indentCount: json['indentCount'] as int,
+      text: json['text'] as String,
     );
   }
 
