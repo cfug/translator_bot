@@ -22,23 +22,6 @@ class TextStructure {
   /// 原始文本行
   final List<String> originalText;
 
-  TextStructure copyWith({
-    TextStructureType? type,
-    int? start,
-    int? end,
-    List<String>? originalText,
-    List<String>? plainText,
-    String? syntaxPrefix,
-    String? syntaxSuffix,
-  }) {
-    return TextStructure(
-      type: type ?? this.type,
-      start: start ?? this.start,
-      end: end ?? this.end,
-      originalText: originalText ?? this.originalText,
-    );
-  }
-
   @override
   String toString() =>
       '\nTextStructure(\n'
@@ -47,15 +30,22 @@ class TextStructure {
       ')';
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is TextStructure &&
-          runtimeType == other.runtimeType &&
-          type == other.type &&
-          start == other.start &&
-          end == other.end &&
-          originalText == other.originalText;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! TextStructure || runtimeType != other.runtimeType) {
+      return false;
+    }
+    if (type != other.type || start != other.start || end != other.end) {
+      return false;
+    }
+    if (originalText.length != other.originalText.length) return false;
+    for (var i = 0; i < originalText.length; i++) {
+      if (originalText[i] != other.originalText[i]) return false;
+    }
+    return true;
+  }
 
   @override
-  int get hashCode => Object.hashAll([type, start, end, originalText]);
+  int get hashCode =>
+      Object.hash(type, start, end, Object.hashAll(originalText));
 }
