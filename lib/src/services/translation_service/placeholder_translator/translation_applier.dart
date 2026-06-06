@@ -1,9 +1,13 @@
 import '../models/translation_chunk_model.dart';
+import 'chunk_input_formatter.dart';
 
 /// 译文回填器
 ///
 /// 把翻译结果按译文块 ID 替换回占位后的原始行，生成最终文本。
 /// 每个译文块的内容按其缩进计数为每一行补齐前导空格并 `trim`。
+///
+/// 输入阶段（[ChunkInputFormatter]）把多行内容的换行折叠成 `\n`，
+/// 此处把 `\n` 还原为真换行。
 class TranslationApplier {
   const TranslationApplier();
 
@@ -25,6 +29,7 @@ class TranslationApplier {
       replacements.putIfAbsent(
         chunk.id,
         () => chunk.text
+            .replaceAll(r'\n', '\n')
             .trim()
             .split('\n')
             .map((line) => '${" " * chunk.indentCount}${line.trim()}')

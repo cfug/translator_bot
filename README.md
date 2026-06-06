@@ -4,12 +4,11 @@
 <h1 align="center">CFUG Translator Bot</h1>
 
 <p align="center">
-  <img alt="Translator Bot v0.0.8" src="https://img.shields.io/badge/Translator Bot%20v0.0.7-159067?style=flat&logo=devbox&logoColor=FFFFFF"/>
+  <img alt="Translator Bot v0.0.9" src="https://img.shields.io/badge/Translator Bot%20v0.0.9-159067?style=flat&logo=devbox&logoColor=FFFFFF"/>
   <a href="https://dart.dev/"><img alt="Dart v3.11" src="https://img.shields.io/badge/Dart%20v3.11-1A70B3?style=flat&logo=dart&logoColor=FFFFFF"/></a> 
-  <a href="https://aistudio.google.com/"><img src="https://img.shields.io/badge/Gemini%202.5%20flash-735E92?style=flat&logo=googlegemini&logoColor=FFFFFF" alt="Gemini 2.5 flash" /></a>
 </p>
 
-使用 `Gemini` AI 翻译处理指定文档。
+使用 AI 翻译处理指定文档。
 
 适用仓库：
 - [cfug/flutter.cn](https://github.com/cfug/flutter.cn/blob/main/.github/workflows/translator_bot.yml)
@@ -17,7 +16,15 @@
 
 ## 配置
 
-在需要使用的仓库中配置 [Github Action](./.github/workflows/translator_bot_template.yml)。
+在需要使用的仓库中配置 [Github Action（参考）](./.github/workflows/translator_bot_template.yml)。
+
+| 参数                                              | 默认值                      | 可选项          | 说明                                                                                                                                                             |
+| ------------------------------------------------- | --------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| model                                             | `gemini`                    | gemini / openai | 模型协议，默认 `gemini`                                                                                                                                          |
+| github_token                                      | -                           | -               | 具有 repo 权限的 GitHub Token，用于访问评论内容和提交翻译结果。 <br/> Token 至少拥有以下权限：<br/> contents: write <br> issues: write <br> pull-requests: write |
+| gemini_api_key <br/> **(model = gemini 时必填)**  | -                           | -               | Gemini API Key: https://aistudio.google.com/api-keys                                                                                                             |
+| openai_api_key <br/> **(model = openai 时必填)**  | -                           | -               | OpenAI API Key，兼容 OpenAI API 协议都可使用。                                                                                                                   |
+| openai_base_url <br/> **(model = openai 时可选)** | `https://api.openai.com/v1` | -               | OpenAI API 协议 Base URL，支持第三方部署的 OpenAI API 协议兼容端点。                                                                                             |
 
 ## 使用
 
@@ -32,7 +39,11 @@
 
 ### Prompt 调试
 
-访问：https://aistudio.google.com/
+目前内部使用模型以及参数：
+- Gemini: [gemini_service.dart](lib/src/services/model_service/gemini/gemini_service.dart)
+- OpenAI: [openai_service.dart](lib/src/services/model_service/openai/openai_service.dart)
+
+对应使用模型参数进行调试，各 Prompt 位于 [lib/src/prompts](lib/src/prompts)。
 
 ### 本地调试
 
@@ -40,10 +51,12 @@
 ```
 GH_TOKEN = xxxxxxx
 GEMINI_API_KEY = xxxxxxx
+OPENAI_API_KEY = xxxxxxx
+OPENAI_BASE_URL = xxxxxxx
 ```
 
 调用以下指令：
 ```bash
-# 例如：dart bin/translator.dart --dry-run --repository cfug/flutter.cn --actionId 0 --issueId 0 --commentId 0 --filePath ./src/content/perf/appendix.md
-$ dart bin/translator.dart --dry-run --repository username/repo --actionId 0 --issueId 0 --commentId 0 --filePath xxxxxx
+# 例如：dart bin/translator.dart --dry-run --model gemini --repository cfug/flutter.cn --actionId 0 --issueId 0 --commentId 0 --filePath ./src/content/perf/appendix.md
+$ dart bin/translator.dart --dry-run --model gemini --repository username/repo --actionId 0 --issueId 0 --commentId 0 --filePath xxxxxx
 ```

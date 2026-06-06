@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.9
+
+- Support OpenAI API (`--model openai`).
+- Refactor the entire translator bot.
+
 ## 0.0.8
 
 - Supply chain security.

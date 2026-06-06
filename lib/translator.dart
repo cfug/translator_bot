@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:github/github.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 
 import 'src/utils.dart';
 import 'src/common.dart';
-import 'src/services/gemini_service.dart';
 import 'src/services/github_service.dart';
+import 'src/services/model_service/model_service.dart';
+import 'src/services/translation_service/translation_exception.dart';
 
 /// Bot 任务状态
 enum BotState { none, running, success, error }
@@ -26,12 +26,12 @@ class Translator {
     this.filePath, {
     this.dryRun = false,
     required this.githubService,
-    required this.geminiService,
+    required this.modelService,
     required this.logger,
   });
 
   final GithubService githubService;
-  final GeminiService geminiService;
+  final ModelService modelService;
   final Logger logger;
 
   /// 需要操作的 repo，如 `username/repo`
@@ -90,12 +90,12 @@ class Translator {
 
     try {
       /// 分块进行翻译
-      final translatorChunkResult = await geminiService.translatorChunk(
+      final translatorChunkResult = await modelService.translatorChunk(
         fileText,
       );
       translatedText = translatorChunkResult.outputText;
       totalTokenCount = translatorChunkResult.totalTokenCount;
-    } on GenerativeAIException catch (e) {
+    } on TranslationException catch (e) {
       await updateBotStateIssueComment(
         BotState.error,
         '💬 AI 生成或处理发生错误 \n'
@@ -115,6 +115,10 @@ class Translator {
     if (!dryRun && translatedTextLines.length > 30) {
       logger.log('...');
     }
+    logger.log('-----------------------------');
+    logger.log(' ');
+
+    logger.log('消耗 Token 总数: $totalTokenCount');
     logger.log('-----------------------------');
     logger.log(' ');
 

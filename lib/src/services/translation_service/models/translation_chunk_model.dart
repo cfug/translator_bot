@@ -1,5 +1,3 @@
-import 'package:google_generative_ai/google_generative_ai.dart' show Schema;
-
 /// 翻译块数据
 class TranslationChunk {
   /// 翻译块数据
@@ -12,9 +10,22 @@ class TranslationChunk {
   factory TranslationChunk.fromJson(Map<String, dynamic> json) {
     return TranslationChunk(
       id: json['id'] as String,
-      indentCount: json['indentCount'] as int,
+      indentCount: _parseIndentCount(json['indentCount']),
       text: json['text'] as String,
     );
+  }
+
+  /// 容错解析 [indentCount] 为 [int]
+  ///
+  /// 模型有时把整数返回成字符串（如 `"2"`）或浮点（如 `2.0`）
+  static int _parseIndentCount(Object? value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      final parsed = num.tryParse(value.trim());
+      if (parsed != null) return parsed.toInt();
+    }
+    throw FormatException('indentCount 无法解析为 int', value);
   }
 
   /// 翻译块 ID
@@ -60,15 +71,3 @@ class TranslationChunk {
   @override
   int get hashCode => Object.hashAll([id, indentCount, text]);
 }
-
-final translationChunkResponseSchema = Schema.array(
-  nullable: false,
-  items: Schema.object(
-    requiredProperties: ['id', 'indentCount', 'text'],
-    properties: {
-      'id': Schema.string(nullable: false),
-      'indentCount': Schema.integer(nullable: false),
-      'text': Schema.string(nullable: false),
-    },
-  ),
-);

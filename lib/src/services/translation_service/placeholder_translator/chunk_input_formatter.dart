@@ -3,7 +3,7 @@ import '../models/translation_chunk_model.dart';
 /// 译文块输入格式化器
 ///
 /// 把单个 [TranslationChunk] 格式化为 AI 需要的 `<INPUT>...</INPUT>` 输入格式。
-/// 多行内容的换行被折叠为字面 `\n`，保证一个块占一段输入。
+/// 多行内容的换行被折叠为 `\\n`，保证一个块占一段输入。
 class ChunkInputFormatter {
   const ChunkInputFormatter();
 

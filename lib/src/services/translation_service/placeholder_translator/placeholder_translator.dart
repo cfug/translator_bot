@@ -1,9 +1,8 @@
-import 'package:google_generative_ai/google_generative_ai.dart';
-
 import '../models/translation_chunk_model.dart';
+import '../model_session.dart';
+import '../translation_exception.dart';
 import 'batch_splitter.dart';
 import 'translation_applier.dart';
-import 'translation_response_parser.dart';
 
 /// 单批翻译函数
 ///
@@ -15,13 +14,13 @@ typedef BatchTranslator = Future<List<TranslationChunk>> Function(String input);
 /// 衔接占位之后的两个阶段：分批翻译 与 译文回填。
 ///
 /// - 分批由 [BatchSplitter] 完成
-/// - 每批翻译委托给注入的 [BatchTranslator]([PlaceholderTranslator.gemini]
-///   工厂将其接到 Gemini `ChatSession` + [TranslationResponseParser]);
+/// - 每批翻译委托给注入的 [BatchTranslator]
+///   （通常由某个 [ModelSession] 适配器的 `translateBatch` 提供）;
 /// - 回填由 [TranslationApplier] 完成。
 ///
 /// 进度通过 [onProgress] 回调输出。
 class PlaceholderTranslator {
-  PlaceholderTranslator({
+  const PlaceholderTranslator({
     required BatchTranslator translateBatch,
     BatchSplitter splitter = const BatchSplitter(),
     TranslationApplier applier = const TranslationApplier(),
@@ -30,29 +29,6 @@ class PlaceholderTranslator {
        _splitter = splitter,
        _applier = applier,
        _onProgress = onProgress ?? print;
-
-  /// 基于 Gemini `ChatSession` 的编排器
-  ///
-  /// 把网络调用与 JSON 响应解析包装为 [BatchTranslator]。
-  ///
-  /// - [chat] 模型会话
-  factory PlaceholderTranslator.gemini(
-    ChatSession chat, {
-    BatchSplitter splitter = const BatchSplitter(),
-    TranslationApplier applier = const TranslationApplier(),
-    TranslationResponseParser parser = const TranslationResponseParser(),
-    void Function(String message)? onProgress,
-  }) {
-    return PlaceholderTranslator(
-      splitter: splitter,
-      applier: applier,
-      onProgress: onProgress,
-      translateBatch: (input) async {
-        final response = await chat.sendMessage(Content.text(input));
-        return parser.parse(response.text ?? '');
-      },
-    );
-  }
 
   final BatchTranslator _translateBatch;
   final BatchSplitter _splitter;
@@ -89,8 +65,10 @@ class PlaceholderTranslator {
         try {
           final translatedChunk = await _translateBatch(batchInputText);
           translatedPlaceholderList.addAll(translatedChunk);
+        } on TranslationException {
+          rethrow;
         } catch (e) {
-          throw GenerativeAIException('$e\n');
+          throw TranslationException('$e\n');
         }
         _onProgress('✅ 完成翻译第 ${i + 1} 批数据');
       }

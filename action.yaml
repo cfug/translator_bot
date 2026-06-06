@@ -6,11 +6,21 @@ branding:
   color: blue
 inputs:
   github_token:
-    description: 'Github Token with repo permissions'
+    description: '具有 repo 权限的 GitHub Token，用于访问评论内容和提交翻译结果'
     required: true
+  model:
+    description: '翻译模型协议: gemini | openai（默认 gemini）'
+    required: false
+    default: 'gemini'
   gemini_api_key:
-    description: 'Google Gemini API Key'
-    required: true
+    description: 'Google Gemini 协议 API Key（model=gemini 时必填）'
+    required: false
+  openai_api_key:
+    description: 'OpenAI 协议 API Key（model=openai 时必填）'
+    required: false
+  openai_base_url:
+    description: 'OpenAI baseUrl（可选，默认 https://api.openai.com/v1；指向 OpenAI 协议兼容接口时改此项）'
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -37,7 +47,7 @@ runs:
     - name: Check comment pattern and extract path
       if: steps.entry.outputs.valid == 'true'
       id: extract-comment
-      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
       with:
         github-token: ${{ inputs.github_token }}
         script: |
@@ -70,7 +80,7 @@ runs:
           }
 
     - if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
-      uses: dart-lang/setup-dart@2bd11704788983a6a210731656d0042e2df8b2c1
+      uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
       with:
         sdk: '3.11'
     - name: Prepare dependencies
@@ -86,6 +96,8 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.github_token }}
         GEMINI_API_KEY: ${{ inputs.gemini_api_key }}
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        OPENAI_BASE_URL: ${{ inputs.openai_base_url }}
       run: |
-        dart ${{ github.action_path }}/bin/translator.dart --repository ${{ github.repository }} --actionId ${{ github.run_id }} --issueId ${{ github.event.issue.number }} --commentId ${{ github.event.comment.id }} --filePath ${{ steps.extract-comment.outputs.file_path }}
+        dart ${{ github.action_path }}/bin/translator.dart --model ${{ inputs.model }} --repository ${{ github.repository }} --actionId ${{ github.run_id }} --issueId ${{ github.event.issue.number }} --commentId ${{ github.event.comment.id }} --filePath ${{ steps.extract-comment.outputs.file_path }}
       shell: bash
