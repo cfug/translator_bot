@@ -18,7 +18,7 @@ class MarkdownTableParser extends RunBlockParser {
 
   @override
   TextStructureType resolveType(ParseContext context) =>
-      Utils.isChinese(context.originalText.join())
+      Utils.hasChinese(context.originalText.join())
       ? TextStructureType.chineseMarkdownTable
       : TextStructureType.markdownTable;
 }

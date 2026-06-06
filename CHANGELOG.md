@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.10
+
+- Improve the reliability of supplementary translation.
+
 ## 0.0.9
 
 - Support OpenAI API (`--model openai`). [#12](https://github.com/cfug/translator_bot/pull/12)

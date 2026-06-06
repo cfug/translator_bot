@@ -17,7 +17,7 @@ class TopMetadataParser extends DelimitedBlockParser {
 
   @override
   TextStructureType resolveType(ParseContext context) =>
-      Utils.isChinese(context.originalText.join())
+      Utils.hasChinese(context.originalText.join())
       ? TextStructureType.chineseTopMetadata
       : TextStructureType.topMetadata;
 }

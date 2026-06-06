@@ -1,4 +1,5 @@
 import '../../enum.dart';
+import '../../text_structure_parser/models/text_structure_model.dart';
 import '../placeholder_chunker.dart';
 
 /// Markdown 标题占位处理器
@@ -29,24 +30,41 @@ class MarkdownTitleChunker extends PlaceholderChunker {
     final titleText = markdownTitleMatch.group(2);
     if (titlePrefix == null || titleText == null) return true;
 
-    /// 下两行标题是否存在中文
-    final textStructureNext2IsChinese =
-        textStructureNext2?.type.isChinese ?? false;
-
-    /// 下两行标题前缀
-    String? titlePrefixNext2;
-    if (textStructureNext2 != null) {
-      final contentNext2 = textStructureNext2.originalText.join('\n');
-      final markdownTitleMatch = markdownTitleRegex.firstMatch(contentNext2);
-      if (markdownTitleMatch != null) {
-        titlePrefixNext2 = markdownTitleMatch.group(1);
-      }
+    /// 解析相邻标题为 (前缀, 文本)
+    ({String prefix, String text})? parseTitle(TextStructure? structure) {
+      if (structure == null) return null;
+      final match = markdownTitleRegex.firstMatch(
+        structure.originalText.join('\n'),
+      );
+      final prefix = match?.group(1);
+      final text = match?.group(2);
+      if (prefix == null || text == null) return null;
+      return (prefix: prefix, text: text);
     }
 
-    /// 下两行标题前缀可匹配并且为中文的情况，可匹配则跳过翻译
-    if (titlePrefix == titlePrefixNext2 && textStructureNext2IsChinese) {
-      return true;
-    }
+    final next2 = parseTitle(textStructureNext2);
+    final prev2 = parseTitle(context.next(-2));
+
+    /// 相邻标题是否与本标题同级（前缀一致）
+    bool isSameLevel(({String prefix, String text})? sibling) =>
+        sibling != null && sibling.prefix == titlePrefix;
+
+    /// 相邻标题正文是否与本标题等值
+    bool isSameText(({String prefix, String text})? sibling) =>
+        sibling != null &&
+        PlaceholderContext.textEquals(sibling.text, titleText);
+
+    final next2IsChinese = textStructureNext2?.type.isChinese ?? false;
+
+    /// 下两行是本标题的译文 -> 本行是已译原文，
+    /// 跳过：同级标题，且其为中文译文，或与本标题等值。
+    final isAlreadyTranslated =
+        isSameLevel(next2) && (next2IsChinese || isSameText(next2));
+
+    /// 上两行是与本标题等值的同级标题，跳过避免重复。
+    final isTranslationCopy = isSameLevel(prev2) && isSameText(prev2);
+
+    if (isAlreadyTranslated || isTranslationCopy) return true;
 
     /// 添加翻译块 ID 占位
     final translationChunkId = context.addChunk(titleText);

@@ -23,7 +23,7 @@ class MarkdownCustomAsideTypeParser extends SingleLineParser {
 
     if (hasType && hasTitle) {
       /// `:::类型 标题`（标记中文）
-      return Utils.isChinese(context.currentLine)
+      return Utils.hasChinese(context.currentLine)
           ? TextStructureType.chineseMarkdownCustomAsideTypeTitle
           : TextStructureType.markdownCustomAsideTypeTitle;
     } else if (hasType) {
