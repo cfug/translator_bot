@@ -22,9 +22,9 @@
 | ------------------------------------------------- | --------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | model                                             | `gemini`                    | gemini / openai | 模型协议，默认 `gemini`                                                                                                                                          |
 | github_token                                      | -                           | -               | 具有 repo 权限的 GitHub Token，用于访问评论内容和提交翻译结果。 <br/> Token 至少拥有以下权限：<br/> contents: write <br> issues: write <br> pull-requests: write |
-| gemini_api_key <br/> **(model = gemini 时必填)**  | -                           | -               | Gemini API Key: https://aistudio.google.com/api-keys                                                                                                             |
-| openai_api_key <br/> **(model = openai 时必填)**  | -                           | -               | OpenAI API Key，兼容 OpenAI API 协议都可使用。                                                                                                                   |
-| openai_base_url <br/> **(model = openai 时可选)** | `https://api.openai.com/v1` | -               | OpenAI API 协议 Base URL，支持第三方部署的 OpenAI API 协议兼容端点。                                                                                             |
+| gemini_api_key <br/> <sup>**(model = gemini 时必填)**</sup>  | -                           | -               | Gemini API Key: https://aistudio.google.com/api-keys                                                                                                             |
+| openai_api_key <br/> <sup>**(model = openai 时必填)</sup>**  | -                           | -               | OpenAI API Key，兼容 OpenAI API 协议都可使用。                                                                                                                   |
+| openai_base_url <br/> <sup>**(model = openai 时可选)**</sup> | `https://api.openai.com/v1` | -               | OpenAI API 协议 Base URL，支持第三方部署的 OpenAI API 协议兼容端点。                                                                                             |
 
 ## 使用
 
