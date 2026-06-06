@@ -4,8 +4,9 @@ import 'package:args/args.dart';
 import 'package:github/github.dart';
 import 'package:http/http.dart' as http;
 import 'package:cfug_translator_bot/src/common.dart';
-import 'package:cfug_translator_bot/src/services/gemini_service.dart';
 import 'package:cfug_translator_bot/src/services/github_service.dart';
+import 'package:cfug_translator_bot/src/services/model_service/model_service.dart';
+import 'package:cfug_translator_bot/src/services/model_service/model_service_factory.dart';
 import 'package:cfug_translator_bot/translator.dart';
 
 void main(List<String> arguments) async {
@@ -23,6 +24,12 @@ void main(List<String> arguments) async {
     help: 'Comment ID 如: https://github.com/x/x/issues/123 中评论的 ID',
   );
   argParser.addOption('filePath', help: '需要翻译的具体文件路径 如：./xx/xx.x');
+  argParser.addOption(
+    'model',
+    help:
+        '选择翻译模型协议: ${ModelType.values.map((type) => type.name).join(', ')}'
+        '（默认: ${ModelType.defaultType.name}）',
+  );
 
   final ArgResults results;
   try {
@@ -49,6 +56,15 @@ void main(List<String> arguments) async {
   final issueId = int.parse(results.option('issueId') ?? '-1');
   final commentId = int.parse(results.option('commentId') ?? '-1');
   final filePath = results.option('filePath') ?? '';
+  final modelName = results.option('model') ?? ModelType.defaultType.name;
+
+  final ModelType modelType;
+  try {
+    modelType = ModelType.fromName(modelName);
+  } on ArgumentError catch (e) {
+    print(e.message);
+    io.exit(64);
+  }
 
   if (repository.isEmpty) {
     print('repository 不能为空');
@@ -77,7 +93,7 @@ void main(List<String> arguments) async {
     client: client,
   );
   final githubService = GithubService(github: github);
-  final geminiService = GeminiService(apiKey: geminiKey, httpClient: client);
+  final modelService = createModelService(modelType, httpClient: client);
 
   await Translator(
     repository,
@@ -87,7 +103,7 @@ void main(List<String> arguments) async {
     filePath,
     dryRun: dryRun,
     githubService: githubService,
-    geminiService: geminiService,
+    modelService: modelService,
     logger: Logger(),
   ).run();
 

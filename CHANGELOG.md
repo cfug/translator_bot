@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.9
+
+- Support OpenAI API (`--model openai`). [#12](https://github.com/cfug/translator_bot/pull/12)
+- Refactor the entire translator bot. [#12](https://github.com/cfug/translator_bot/pull/12)
+
 ## 0.0.8
 
 - Supply chain security.

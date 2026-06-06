@@ -1,60 +1,24 @@
 import '../../../../utils.dart';
-import '../models/text_structure_model.dart';
 import '../../enum.dart';
 import '../text_parser.dart';
 
 /// Markdown 表格 解析器
-class MarkdownTableParser implements TextParser {
-  @override
-  int get priority => 15;
-
-  static bool hasMatch(String line) =>
-      RegExp(r'^\s*(\S.*?\|.*\S)\s*$').hasMatch(line);
+class MarkdownTableParser extends RunBlockParser {
+  static final RegExp _pattern = RegExp(r'^\s*(\S.*?\|.*\S)\s*$');
 
   @override
-  ParseResult parse(ParseContext context) {
-    final lineTrim = context.currentLineTrim;
-    final lineNextTrim = context.nextLineTrim;
+  TextStructureType get blockType => TextStructureType.markdownTable;
 
-    if (hasMatch(lineTrim)) {
-      if (context.currentType != TextStructureType.markdownTable) {
-        /// Markdown 表格 - 开始
-        context.currentType = TextStructureType.markdownTable;
-        context.startLineIndex = context.currentIndex;
-        context.originalText.add(context.currentLine);
-        return ParseResult.handled;
-      } else {
-        if (lineNextTrim == null || !hasMatch(lineNextTrim)) {
-          /// Markdown 表格 - 结束
-          context.originalText.add(context.currentLine);
+  @override
+  bool startsBlock(String lineTrim) => _pattern.hasMatch(lineTrim);
 
-          /// 标记中文
-          final isChinese = Utils.isChinese(context.originalText.join());
-          final textStructureType = isChinese
-              ? TextStructureType.chineseMarkdownTable
-              : TextStructureType.markdownTable;
+  @override
+  bool endsAfter(String? nextLineTrim, ParseContext context) =>
+      nextLineTrim == null || !_pattern.hasMatch(nextLineTrim);
 
-          /// 添加结构数据
-          context.addStructure(
-            TextStructure(
-              type: textStructureType,
-              start: context.startLineIndex,
-              end: context.currentIndex,
-              originalText: context.originalText,
-            ),
-          );
-
-          context.reset();
-          return ParseResult.handled;
-        }
-      }
-    }
-
-    /// Markdown 表格 - 内容
-    if (context.currentType == TextStructureType.markdownTable) {
-      context.originalText.add(context.currentLine);
-      return ParseResult.handled;
-    }
-    return ParseResult.notHandled;
-  }
+  @override
+  TextStructureType resolveType(ParseContext context) =>
+      Utils.isChinese(context.originalText.join())
+      ? TextStructureType.chineseMarkdownTable
+      : TextStructureType.markdownTable;
 }
