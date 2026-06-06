@@ -15,7 +15,7 @@ class Liquid1Parser extends SingleLineParser {
 
   @override
   TextStructureType resolveType(ParseContext context) =>
-      Utils.isChinese(context.currentLine)
+      Utils.hasChinese(context.currentLine)
       ? TextStructureType.chinsesLiquid1
       : TextStructureType.liquid1;
 }

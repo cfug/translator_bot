@@ -40,6 +40,8 @@ class TranslationPlaceholder {
   static List<PlaceholderChunker> _defaultChunkers() {
     return [
       TopMetadataChunker(),
+      // 已含中文的顶部元数据共用同一套逻辑（补译逻辑）
+      TopMetadataChunker(TextStructureType.chineseTopMetadata),
       MarkdownParagraphChunker(),
       MarkdownTitleChunker(),
       MarkdownListItemChunker(),

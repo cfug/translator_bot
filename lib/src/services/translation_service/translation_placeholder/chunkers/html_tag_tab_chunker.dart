@@ -25,7 +25,7 @@ class HtmlTagTabChunker extends PlaceholderChunker {
           final other = match?.group(2) ?? '';
           final titleTrim = title.trim();
 
-          if (titleTrim != '' && !Utils.isChinese(titleTrim)) {
+          if (titleTrim != '' && !Utils.hasChinese(titleTrim)) {
             /// 添加注释原始内容
             context.addLine(
               '${" " * context.indentCount(content)}<!-- ${content.trimLeft()} -->',

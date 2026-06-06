@@ -14,5 +14,10 @@ void main() {
       const testCase = CaseChineseParagraph();
       expect(getCaseStructures(testCase), testCase.expectStructures());
     });
+
+    test('段落（英文为主夹少量中文术语）', () {
+      const testCase = CaseEnglishParagraphWithChineseTerm();
+      expect(getCaseStructures(testCase), testCase.expectStructures());
+    });
   });
 }

@@ -15,7 +15,7 @@ class MarkdownTitleParser extends SingleLineParser {
 
   @override
   TextStructureType resolveType(ParseContext context) =>
-      Utils.isChinese(context.currentLine)
+      Utils.hasChinese(context.currentLine)
       ? TextStructureType.chineseMarkdownTitle
       : TextStructureType.markdownTitle;
 }

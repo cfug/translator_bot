@@ -4,10 +4,13 @@ import '../enum.dart';
 import '../models/translation_chunk_model.dart';
 import '../text_structure_parser/models/text_structure_model.dart';
 
+/// 文档顶部翻译说明文本
+const String topMetadataTranslationNoteText = '本篇文档由 AI 翻译。';
+
 /// 在文档顶部的翻译说明（由 [PlaceholderChunker] 在顶部元数据处理器追加）
 const String topMetadataTranslationNote =
     '\n:::note\n\n'
-    '本篇文档由 AI 翻译。\n\n'
+    '$topMetadataTranslationNoteText\n\n'
     ':::';
 
 /// 占位处理器接口
@@ -111,5 +114,12 @@ class PlaceholderContext {
     final regex = RegExp(r'^ *');
     final match = regex.firstMatch(content);
     return match?.end ?? 0;
+  }
+
+  /// 逐行去除行尾空白后比较两段文本是否等值
+  static bool textEquals(String a, String b) {
+    String normalize(String s) =>
+        s.split('\n').map((line) => line.trimRight()).join('\n');
+    return normalize(a) == normalize(b);
   }
 }

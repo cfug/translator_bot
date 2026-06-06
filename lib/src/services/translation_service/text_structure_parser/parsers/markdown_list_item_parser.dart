@@ -21,7 +21,7 @@ class MarkdownListItemParser extends RunBlockParser {
 
   @override
   TextStructureType resolveType(ParseContext context) =>
-      Utils.isChinese(context.originalText.join())
+      Utils.isTranslated(context.originalText.join())
       ? TextStructureType.chineseMarkdownListItem
       : TextStructureType.markdownListItem;
 }

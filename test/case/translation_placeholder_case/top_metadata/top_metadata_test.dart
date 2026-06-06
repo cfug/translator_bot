@@ -3,6 +3,7 @@ import 'package:test/test.dart';
 import '../translation_placeholder_utils.dart';
 import 'case/case_top_metadata_1.dart';
 import 'case/case_top_metadata_2.dart';
+import 'case/case_top_metadata_3.dart';
 import 'case/case_top_metadata_list_item_1.dart';
 
 void main() {
@@ -15,6 +16,12 @@ void main() {
 
     test('顶部元数据基础 2 - 已存在翻译说明', () {
       const testCase = CaseTopMetadata2();
+      final result = getPlaceholderOriginalLines(testCase);
+      expect(result, testCase.expectText());
+    });
+
+    test('顶部元数据基础 3 - 块内补充翻译', () {
+      const testCase = CaseTopMetadata3();
       final result = getPlaceholderOriginalLines(testCase);
       expect(result, testCase.expectText());
     });
