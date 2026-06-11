@@ -10,6 +10,7 @@ export 'markdown_custom_aside_type_parser.dart';
 export 'markdown_custom_1_parser.dart';
 export 'markdown_custom_2_parser.dart';
 export 'liquid_1_parser.dart';
+export 'mdx_component_file_tree_parser.dart';
 export 'html_tag_parser.dart';
 export 'html_comment_parser.dart';
 export 'markdown_table_parser.dart';

@@ -8,9 +8,9 @@ abstract class TextReformatter {
   String reform(String text);
 }
 
-/// 标记行间隔家族基类（模板方法）
+/// 标记行间隔预处理器
 ///
-/// 适用于「在匹配某规则的行上方/下方补空行」的预处理（列表项、`:::`、liquid 注释……），
+/// 适用于 “在匹配某规则的行上方/下方补空行” 的预处理（列表项、`:::`、liquid 注释……），
 /// 目的是让后续 `TextStructureParser` 更容易识别块边界。
 ///
 /// 子类只需声明：

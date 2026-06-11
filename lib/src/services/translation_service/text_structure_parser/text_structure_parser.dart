@@ -46,6 +46,8 @@ class TextStructureParser {
       MarkdownCustom1Parser(),
       MarkdownCustom2Parser(),
       Liquid1Parser(),
+      // 必须排在 [HtmlTagParser] 之前，`<FileTree>` 同样能被 [HtmlTagParser]
+      MdxComponentFileTreeParser(),
       HtmlTagParser(),
       HtmlCommentParser(),
       MarkdownTableParser(),

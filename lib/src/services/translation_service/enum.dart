@@ -72,6 +72,9 @@ enum TextStructureType {
   /// HTML 注释 `<!-- xx -->`
   htmlComment,
 
+  /// MDX/JSX 自定义组件（文件树）`<FileTree> ... </FileTree>`
+  mdxComponentFileTree,
+
   /// 中文 - 段落
   chineseParagraph,
 
