@@ -1,4 +1,4 @@
-import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/translation_placeholder.dart';
+import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/top_metadata_chunker.dart';
 
 import '../../../../mock_uuid.dart';
 import '../../case.dart';
@@ -10,7 +10,8 @@ class CaseTopMetadata3 implements Case {
   /// 整块虽含中文（`title: 测试`），但新字段仍应被补译，而非整块跳过。
   ///
   /// 期望：已译字段（带 `# title:` 注释 + `title: 测试`）原样保留、不重译；
-  /// 新字段 `description` 注释原文 + 插占位；译注因不存在而补充一次。
+  /// 新字段 `description` 注释原文 + 插占位；
+  /// AI 翻译标记因不存在而补充一次。
   const CaseTopMetadata3();
 
   @override
@@ -32,8 +33,8 @@ description: What is performance, and why is performance important
 title: 测试
 # description: What is performance, and why is performance important
 description: ${MockUuid.translationChunkId}
+$topMetadataAiTranslatedFlag true
 ---
-${TranslationPlaceholder(MockUuid()).translationNote}
 ''';
   }
 }

@@ -30,9 +30,6 @@ class TranslationPlaceholder {
   /// 译文 ID 占位块的数据
   final List<TranslationChunk> translationPlaceholderData = [];
 
-  /// 在文档顶部的翻译说明
-  String get translationNote => topMetadataTranslationNote;
-
   /// 按结构类型分组的处理器
   final Map<TextStructureType, List<PlaceholderChunker>> _chunkersByType;
 

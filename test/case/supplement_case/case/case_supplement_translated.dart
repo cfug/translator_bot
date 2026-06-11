@@ -1,3 +1,5 @@
+import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/top_metadata_chunker.dart';
+
 import '../case.dart';
 
 /// 补充翻译 - 完全已译文档
@@ -14,13 +16,8 @@ class CaseSupplementTranslated implements Case {
 title: 入门
 # description: Learn the basics
 description: 学习基础
+$topMetadataAiTranslatedFlag true
 ---
-
-:::note
-
-本篇文档由 AI 翻译。
-
-:::
 
 # Overview
 

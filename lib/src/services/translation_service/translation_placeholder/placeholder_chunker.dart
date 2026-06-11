@@ -4,15 +4,6 @@ import '../enum.dart';
 import '../models/translation_chunk_model.dart';
 import '../text_structure_parser/models/text_structure_model.dart';
 
-/// 文档顶部翻译说明文本
-const String topMetadataTranslationNoteText = '本篇文档由 AI 翻译。';
-
-/// 在文档顶部的翻译说明（由 [PlaceholderChunker] 在顶部元数据处理器追加）
-const String topMetadataTranslationNote =
-    '\n:::note\n\n'
-    '$topMetadataTranslationNoteText\n\n'
-    ':::';
-
 /// 占位处理器接口
 ///
 /// 每个处理器负责一种 [TextStructureType] 的译文 ID 占位处理（参见 [type]）。

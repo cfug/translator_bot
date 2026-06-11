@@ -1,10 +1,13 @@
 import '../../enum.dart';
 import '../placeholder_chunker.dart';
 
+/// 文档顶部元数据中的 AI 翻译标记
+const String topMetadataAiTranslatedFlag = 'ai-translated:';
+
 /// 顶部元数据占位处理器
 ///
 /// 逐行处理元数据，对 [_targetFields] 字段注释原文并插入译文占位，
-/// 处理完成后在其后追加文档顶部的翻译说明。
+/// 处理完成后在顶部元数据底部追加 AI 翻译标记。
 ///
 /// 如果需要补充翻译，可以指定 [type] 注册类型，
 /// 当顶部元数据已含中文时（[TextStructureType.chineseTopMetadata]），
@@ -47,6 +50,9 @@ class TopMetadataChunker extends PlaceholderChunker {
 
       /// 顶部元数据 - 结束
       if (i != 0 && line.trim() == '---') {
+        if (!_aiTranslatedFlagExists(context)) {
+          context.addLine('$topMetadataAiTranslatedFlag true');
+        }
         context.addLine(line);
         break;
       }
@@ -125,17 +131,16 @@ class TopMetadataChunker extends PlaceholderChunker {
       }
     }
 
-    /// 顶部元数据之后补充翻译说明：仅当全文尚不存在时追加一次（避免重跑重复）
-    final noteExists = context.structures.any(
+    return true;
+  }
+
+  /// 全文是否已存在 AI 翻译标记，避免重跑重复追加
+  bool _aiTranslatedFlagExists(PlaceholderContext context) {
+    return context.structures.any(
       (structure) => structure.originalText.any(
-        (line) => line.contains(topMetadataTranslationNoteText),
+        (line) => line.trim().startsWith(topMetadataAiTranslatedFlag),
       ),
     );
-    if (!noteExists) {
-      context.addBlankLineBeforeNext();
-      context.addLine(topMetadataTranslationNote);
-    }
-    return true;
   }
 
   /// 从 `# <字段>: ...` 注释行解析字段名，非字段注释（如续行）返回 `null`

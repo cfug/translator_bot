@@ -1,4 +1,4 @@
-import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/translation_placeholder.dart';
+import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/top_metadata_chunker.dart';
 
 import '../../../../mock_uuid.dart';
 import '../../case.dart';
@@ -32,8 +32,8 @@ short-title: ${MockUuid.translationChunkId}
 #   What is performance, 
 #   and why is performance important
 description: ${MockUuid.translationChunkId}
+$topMetadataAiTranslatedFlag true
 ---
-${TranslationPlaceholder(MockUuid()).translationNote}
 ''';
   }
 }

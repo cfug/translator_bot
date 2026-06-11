@@ -14,7 +14,7 @@ void main() {
       expect(result, testCase.expectText());
     });
 
-    test('顶部元数据基础 2 - 已存在翻译说明', () {
+    test('顶部元数据基础 2 - 已存在 AI 翻译标记', () {
       const testCase = CaseTopMetadata2();
       final result = getPlaceholderOriginalLines(testCase);
       expect(result, testCase.expectText());
