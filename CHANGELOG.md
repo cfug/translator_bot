@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.11
+
+- Add an `ai-translated: true` flag to the top metadata.
+- Skip the `<FileTree>` MDX component from translation.
+
 ## 0.0.10
 
 - Improve the reliability of supplementary translation.
