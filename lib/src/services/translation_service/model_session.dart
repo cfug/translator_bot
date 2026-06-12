@@ -1,4 +1,5 @@
 import 'models/translation_chunk_model.dart';
+import '../model_service/gemini/gemini_model_session.dart';
 
 /// 模型会话接口
 ///

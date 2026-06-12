@@ -20,7 +20,8 @@ class OpenAiService implements ModelService {
     required String apiKey,
     required String baseUrl,
     required http.Client httpClient,
-  }) : _client = OpenAIClient(
+  }) : _apiKey = apiKey,
+       _client = OpenAIClient(
          config: OpenAIConfig(
            baseUrl: baseUrl,
            authProvider: ApiKeyProvider(apiKey),
@@ -38,6 +39,8 @@ class OpenAiService implements ModelService {
 
   /// 模型客户端
   final OpenAIClient _client;
+
+  final String _apiKey;
 
   /// 内定翻译模型
   static const String _model = 'gpt-5.4-mini';
@@ -71,6 +74,7 @@ class OpenAiService implements ModelService {
   ) async {
     final session = OpenAiModelSession(
       _client,
+      apiKey: _apiKey,
       createRequest: (input) => ChatCompletionCreateRequest(
         model: _model,
         temperature: 0.2,
@@ -92,7 +96,7 @@ class OpenAiService implements ModelService {
     } on TranslationException {
       rethrow;
     } catch (e) {
-      throw TranslationException('$e');
+      throw TranslationException('$e', redact: [_apiKey]);
     }
   }
 }

@@ -12,15 +12,19 @@ class OpenAiModelSession implements ModelSession {
   /// OpenAI 协议的会话适配器
   ///
   /// - [client] 模型客户端（已内置模型配置）
+  /// - [apiKey] 仅用于把错误信息里的密钥脱敏
   /// - [createRequest] 构造请求的函数，接收每批输入文本，返回完整的请求对象（包含模型配置等）
   OpenAiModelSession(
     this.client, {
+    String apiKey = '',
     required OpenAiRequestBuilder createRequest,
     TranslationResponseParser parser = const TranslationResponseParser(),
-  }) : _createRequest = createRequest,
+  }) : _apiKey = apiKey,
+       _createRequest = createRequest,
        _parser = parser;
 
   final OpenAIClient client;
+  final String _apiKey;
   final OpenAiRequestBuilder _createRequest;
   final TranslationResponseParser _parser;
 
@@ -35,7 +39,7 @@ class OpenAiModelSession implements ModelSession {
     try {
       response = await client.chat.completions.create(_createRequest(input));
     } on OpenAIException catch (e) {
-      throw TranslationException('OpenAI 请求失败\n$e\n');
+      throw TranslationException('OpenAI 请求失败\n$e\n', redact: [_apiKey]);
     }
 
     _totalTokens += response.usage?.totalTokens ?? 0;

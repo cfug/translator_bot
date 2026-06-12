@@ -90,17 +90,23 @@ void main() {
       expect(session.totalTokens, 30); // 10 + 20
     });
 
-    test('非 2xx 抛 TranslationException', () async {
+    test('非 2xx 抛 TranslationException，且错误信息里的 key 被脱敏为 ***', () async {
       final client = MockClient((request) async {
         return http.Response.bytes(
-          utf8.encode('{"error":{"message":"bad request"}}'),
+          utf8.encode('{"error":{"message":"bad request key: sk-test"}}'),
           400,
           headers: {'content-type': 'application/json'},
         );
       });
-      expect(
-        () => _session(client).translateBatch('x'),
-        throwsA(isA<TranslationException>()),
+      await expectLater(
+        _session(client).translateBatch('x'),
+        throwsA(
+          isA<TranslationException>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('***'), isNot(contains('sk-test'))),
+          ),
+        ),
       );
     });
   });
@@ -142,6 +148,7 @@ OpenAiModelSession _session(http.Client client, {double? temperature = 0.2}) {
   );
   return OpenAiModelSession(
     openAiClient,
+    apiKey: 'sk-test',
     createRequest: (input) => ChatCompletionCreateRequest(
       model: 'gpt-x',
       temperature: temperature,

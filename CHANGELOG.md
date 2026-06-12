@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.12
+
+- Migrate the Gemini client from `google_generative_ai` to `googleai_dart`.
+- Redact sensitive keys from translation error messages.
+
 ## 0.0.11
 
 - Add an `ai-translated: true` flag to the top metadata.

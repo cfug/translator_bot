@@ -32,9 +32,10 @@ final _text = RegExp(r'^text: (.*)$', multiLine: true);
 
 /// echo OpenAI 端点
 ///
-/// - `generateContent`：解析请求里的 `<INPUT>` 批，
-///   按 id/indentCount 原样回填、文本加 “译:” 前缀（绕开占位 ID 的 UUID 非确定性），以纯数组返回
-/// - `countTokens`：回固定值
+/// 解析请求里的 `<INPUT>` 批，
+/// 按 id/indentCount 原样回填、文本加 “译:” 前缀
+/// （绕开占位 ID 的 UUID 非确定性），以纯数组返回。
+/// token 总数回固定值。
 MockClient _echoClient({int tokensPerCall = 7}) {
   return MockClient((request) async {
     final body = jsonDecode(request.body) as Map<String, dynamic>;

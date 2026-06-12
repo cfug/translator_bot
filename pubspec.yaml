@@ -1,6 +1,6 @@
 name: cfug_translator_bot
 description:
-version: 0.0.11
+version: 0.0.12
 
 publish_to: none
 
@@ -10,10 +10,10 @@ environment:
 dependencies:
   args: 2.7.0
   uuid: 4.5.3
-  github: 9.25.0
+  github: 9.25.1
   http: 1.6.0
-  openai_dart: 6.1.0
-  google_generative_ai: 0.4.7
+  googleai_dart: 8.0.0
+  openai_dart: 6.2.0
 
 dev_dependencies:
   lints: any

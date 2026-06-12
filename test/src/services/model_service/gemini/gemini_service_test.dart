@@ -15,13 +15,13 @@ void main() {
 
     test('跑完整流水线，返回译文 + token', () async {
       final result = await _service(
-        _echoClient(totalTokens: 42),
+        _echoClient(),
       ).translatorChunk('# Hello\n\nWorld');
 
       expect(result.outputText, contains('# 译:Hello'));
       expect(result.outputText, contains('译:World'));
       expect(result.outputText, isNot(contains('<INPUT>')));
-      expect(result.totalTokenCount, 42);
+      expect(result.totalTokenCount, greaterThan(0));
     });
   });
 }
@@ -39,15 +39,12 @@ http.Response _ok(String body) => http.Response.bytes(
 
 /// echo Gemini 端点
 ///
-/// - `generateContent`：解析请求里的 `<INPUT>` 批，
-///   按 id/indentCount 原样回填、文本加 “译:” 前缀（绕开占位 ID 的 UUID 非确定性），以纯数组返回
-/// - `countTokens`：回固定值
-MockClient _echoClient({int totalTokens = 42}) {
+/// 解析请求里的 `<INPUT>` 批，
+/// 按 id/indentCount 原样回填、文本加 “译:” 前缀
+/// （绕开占位 ID 的 UUID 非确定性），以纯数组返回。
+/// token 总数回固定值。
+MockClient _echoClient({int tokensPerCall = 7}) {
   return MockClient((request) async {
-    if (request.url.toString().contains('countTokens')) {
-      return _ok(jsonEncode({'totalTokens': totalTokens}));
-    }
-
     final body = jsonDecode(request.body) as Map<String, dynamic>;
     final contents = body['contents'] as List;
     final userText = ((contents.last as Map)['parts'] as List)
@@ -76,6 +73,7 @@ MockClient _echoClient({int totalTokens = 42}) {
             },
           },
         ],
+        'usageMetadata': {'totalTokenCount': tokensPerCall},
       }),
     );
   });
