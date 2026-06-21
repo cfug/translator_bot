@@ -1,4 +1,4 @@
-export 'top_metadata_parser.dart';
+export 'front_matter_parser.dart';
 export 'markdown_code_block_parser.dart';
 export 'blank_line_parser.dart';
 export 'markdown_horizontal_rule_parser.dart';

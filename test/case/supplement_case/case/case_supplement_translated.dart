@@ -1,4 +1,4 @@
-import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/top_metadata_chunker.dart';
+import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/front_matter_chunker.dart';
 
 import '../case.dart';
 
@@ -16,7 +16,7 @@ class CaseSupplementTranslated implements Case {
 title: 入门
 # description: Learn the basics
 description: 学习基础
-$topMetadataAiTranslatedFlag true
+$frontMatterAiTranslatedFlag true
 ---
 
 # Overview

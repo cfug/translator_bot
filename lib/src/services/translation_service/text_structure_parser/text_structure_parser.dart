@@ -34,7 +34,7 @@ class TextStructureParser {
   /// 兜底的段落解析器不在此列表，而由 [_fallback] 持有。
   static List<TextParser> _defaultParsers() {
     return [
-      TopMetadataParser(),
+      FrontMatterParser(),
       MarkdownCodeBlockParser(),
       BlankLineParser(),
       MarkdownHorizontalRuleParser(),

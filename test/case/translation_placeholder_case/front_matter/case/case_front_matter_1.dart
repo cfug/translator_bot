@@ -1,11 +1,11 @@
-import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/top_metadata_chunker.dart';
+import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/front_matter_chunker.dart';
 
 import '../../../../mock_uuid.dart';
 import '../../case.dart';
 
-class CaseTopMetadata1 implements Case {
+class CaseFrontMatter1 implements Case {
   /// 顶部元数据基础 1
-  const CaseTopMetadata1();
+  const CaseFrontMatter1();
 
   @override
   String testText() {
@@ -32,7 +32,7 @@ short-title: ${MockUuid.translationChunkId}
 #   What is performance, 
 #   and why is performance important
 description: ${MockUuid.translationChunkId}
-$topMetadataAiTranslatedFlag true
+$frontMatterAiTranslatedFlag true
 ---
 ''';
   }

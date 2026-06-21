@@ -4,9 +4,9 @@ import '../text_parser.dart';
 
 /// 顶部元数据解析器
 /// 从 0 行开始 `---` 开头和结尾的部分
-class TopMetadataParser extends DelimitedBlockParser {
+class FrontMatterParser extends DelimitedBlockParser {
   @override
-  TextStructureType get blockType => TextStructureType.topMetadata;
+  TextStructureType get blockType => TextStructureType.frontMatter;
 
   @override
   bool isBegin(String lineTrim) => lineTrim == '---';
@@ -18,6 +18,6 @@ class TopMetadataParser extends DelimitedBlockParser {
   @override
   TextStructureType resolveType(ParseContext context) =>
       Utils.hasChinese(context.originalText.join())
-      ? TextStructureType.chineseTopMetadata
-      : TextStructureType.topMetadata;
+      ? TextStructureType.chineseFrontMatter
+      : TextStructureType.frontMatter;
 }

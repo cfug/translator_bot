@@ -1,10 +1,10 @@
 import 'package:test/test.dart';
 
 import '../reformat_text_utils.dart';
-import 'case/top_metadata_case.dart';
+import 'case/front_matter_case.dart';
 
 void main() {
-  group('ReformatText :: topMetadata ::', () {
+  group('ReformatText :: frontMatter ::', () {
     test('顶部元数据空行过滤', () {
       const testCase = CaseFrontMatterBlankLines();
       expect(getCaseText(testCase), testCase.expectText());

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.13
+
+- Rename `TopMetadata` to `FrontMatter`.
+
 ## 0.0.12
 
 - Migrate the Gemini client from `google_generative_ai` to `googleai_dart`.

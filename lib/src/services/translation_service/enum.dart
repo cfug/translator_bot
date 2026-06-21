@@ -14,7 +14,7 @@ enum TextStructureType {
   /// xxx: xxx
   /// ---
   /// ```
-  topMetadata,
+  frontMatter,
 
   /// Markdown 标题 `# xxx`
   markdownTitle,
@@ -79,7 +79,7 @@ enum TextStructureType {
   chineseParagraph,
 
   /// 中文 - 顶部元数据
-  chineseTopMetadata,
+  chineseFrontMatter,
 
   /// 中文 - Markdown 标题 `# xxx`
   chineseMarkdownTitle,
@@ -100,7 +100,7 @@ enum TextStructureType {
 
   bool get isChinese => [
     TextStructureType.chineseParagraph,
-    TextStructureType.chineseTopMetadata,
+    TextStructureType.chineseFrontMatter,
     TextStructureType.chineseMarkdownTitle,
     TextStructureType.chineseMarkdownListItem,
     TextStructureType.chineseMarkdownTable,

@@ -36,9 +36,9 @@ class TranslationPlaceholder {
   /// 默认处理器列表
   static List<PlaceholderChunker> _defaultChunkers() {
     return [
-      TopMetadataChunker(),
+      FrontMatterChunker(),
       // 已含中文的顶部元数据共用同一套逻辑（补译逻辑）
-      TopMetadataChunker(TextStructureType.chineseTopMetadata),
+      FrontMatterChunker(TextStructureType.chineseFrontMatter),
       MarkdownParagraphChunker(),
       MarkdownTitleChunker(),
       MarkdownListItemChunker(),

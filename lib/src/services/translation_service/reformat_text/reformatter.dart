@@ -1,8 +1,10 @@
+import 'reformat_text.dart';
+
 /// 文本预处理器接口
 ///
-/// 每个实现是一个独立的「文本 → 文本」处理通道，互不共享状态。
+/// 每个实现是一个独立的处理通道，互不共享状态。
 /// 编排器 [ReformatText] 按列表顺序依次应用——与 `TextStructureParser` 不同，
-/// 这里 **顺序即契约**（见 [ReformatText] 默认列表注释）。
+/// 这里 **顺序很重要**（见 [ReformatText] 默认列表注释）。
 abstract class TextReformatter {
   /// 对 [text] 执行一次预处理，返回处理后的文本。
   String reform(String text);

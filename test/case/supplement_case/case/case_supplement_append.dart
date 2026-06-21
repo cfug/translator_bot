@@ -1,4 +1,4 @@
-import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/top_metadata_chunker.dart';
+import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/front_matter_chunker.dart';
 
 import '../../../mock_uuid.dart';
 import '../case.dart';
@@ -44,7 +44,7 @@ title: 入门
 description: 学习基础
 # short-title: Quickstart
 short-title: ${MockUuid.translationChunkId}
-$topMetadataAiTranslatedFlag true
+$frontMatterAiTranslatedFlag true
 ---
 
 # Overview

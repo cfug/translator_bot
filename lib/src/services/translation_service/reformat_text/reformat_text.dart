@@ -29,10 +29,10 @@ class ReformatText {
       LiquidCommentReformatter(),
 
       /// [MarkdownListItemReformatter] 会在 `- xxx` 插入空行，
-      /// 因为 TopMetadata 可能会存在列表项，
-      /// 所以必须由排在其后的 [TopMetadataReformatter] 收尾清理，
+      /// 因为 FrontMatter 可能会存在列表项，
+      /// 所以必须由排在其后的 [FrontMatterReformatter] 收尾清理，
       /// 调换二者顺序会破坏格式。
-      TopMetadataReformatter(),
+      FrontMatterReformatter(),
     ];
   }
 

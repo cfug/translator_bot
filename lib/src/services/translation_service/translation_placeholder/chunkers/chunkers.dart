@@ -1,4 +1,4 @@
-export 'top_metadata_chunker.dart';
+export 'front_matter_chunker.dart';
 export 'markdown_paragraph_chunker.dart';
 export 'markdown_title_chunker.dart';
 export 'markdown_list_item_chunker.dart';

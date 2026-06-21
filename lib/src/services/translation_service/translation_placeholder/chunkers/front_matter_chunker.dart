@@ -2,7 +2,7 @@ import '../../enum.dart';
 import '../placeholder_chunker.dart';
 
 /// 文档顶部元数据中的 AI 翻译标记
-const String topMetadataAiTranslatedFlag = 'ai-translated:';
+const String frontMatterAiTranslatedFlag = 'ai-translated:';
 
 /// 顶部元数据占位处理器
 ///
@@ -10,10 +10,10 @@ const String topMetadataAiTranslatedFlag = 'ai-translated:';
 /// 处理完成后在顶部元数据底部追加 AI 翻译标记。
 ///
 /// 如果需要补充翻译，可以指定 [type] 注册类型，
-/// 当顶部元数据已含中文时（[TextStructureType.chineseTopMetadata]），
+/// 当顶部元数据已含中文时（[TextStructureType.chineseFrontMatter]），
 /// 仍使用同一套逻辑（补译逻辑）。
-class TopMetadataChunker extends PlaceholderChunker {
-  TopMetadataChunker([this.type = TextStructureType.topMetadata]);
+class FrontMatterChunker extends PlaceholderChunker {
+  FrontMatterChunker([this.type = TextStructureType.frontMatter]);
 
   /// 需要翻译的目标字段
   static const List<String> _targetFields = [
@@ -51,7 +51,7 @@ class TopMetadataChunker extends PlaceholderChunker {
       /// 顶部元数据 - 结束
       if (i != 0 && line.trim() == '---') {
         if (!_aiTranslatedFlagExists(context)) {
-          context.addLine('$topMetadataAiTranslatedFlag true');
+          context.addLine('$frontMatterAiTranslatedFlag true');
         }
         context.addLine(line);
         break;
@@ -138,7 +138,7 @@ class TopMetadataChunker extends PlaceholderChunker {
   bool _aiTranslatedFlagExists(PlaceholderContext context) {
     return context.structures.any(
       (structure) => structure.originalText.any(
-        (line) => line.trim().startsWith(topMetadataAiTranslatedFlag),
+        (line) => line.trim().startsWith(frontMatterAiTranslatedFlag),
       ),
     );
   }

@@ -1,10 +1,10 @@
-import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/top_metadata_chunker.dart';
+import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/chunkers/front_matter_chunker.dart';
 
 import '../../case.dart';
 
-class CaseTopMetadata2 implements Case {
+class CaseFrontMatter2 implements Case {
   /// 顶部元数据基础 2 - 已存在 AI 翻译标记
-  const CaseTopMetadata2();
+  const CaseFrontMatter2();
 
   @override
   String testText() {
@@ -18,7 +18,7 @@ short-title: 测试
 #   What is performance,
 #   and why is performance important
 description: 测试
-$topMetadataAiTranslatedFlag false
+$frontMatterAiTranslatedFlag false
 ---
 ''';
   }
@@ -35,7 +35,7 @@ short-title: 测试
 #   What is performance,
 #   and why is performance important
 description: 测试
-$topMetadataAiTranslatedFlag false
+$frontMatterAiTranslatedFlag false
 ---
 ''';
   }
