@@ -9,13 +9,13 @@ void main() {
     test('跳过段落', () {
       const testCase = SkipParagraph();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
 
     test('跳过 FileTree', () {
       const testCase = SkipFileTree();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
   });
 }

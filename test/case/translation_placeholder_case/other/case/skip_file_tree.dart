@@ -21,7 +21,7 @@ class SkipFileTree implements Case {
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 <FileTree>
 

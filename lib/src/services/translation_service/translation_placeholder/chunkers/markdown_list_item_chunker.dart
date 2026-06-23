@@ -24,8 +24,12 @@ class MarkdownListItemChunker extends PlaceholderChunker {
         if (listItemPrefix == null || listItemTextFirstLine == null) {
           return true;
         }
+
+        /// 计算缩进空格数（列表项符号 + 列表项符号前后的空格）
+        /// 与原文缩进保持一致
         final indentCount =
-            context.indentCount(lines[0]) + listItemPrefix.length + 1;
+            listItemPrefix.length +
+            context.indentCount(lines[0].replaceFirst(listItemPrefix, ''));
 
         /// 翻译原始内容
         final content =

@@ -9,13 +9,13 @@ void main() {
     test('Liquid {% tab "标题" %} 语法基础 1', () {
       const testCase = CaseLiquidTab1();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
 
     test('Liquid {% tab "标题" %} 语法 2 - 跳过翻译', () {
       const testCase = CaseLiquidTab2();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
   });
 }

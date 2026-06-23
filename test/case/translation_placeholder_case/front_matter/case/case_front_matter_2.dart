@@ -24,7 +24,7 @@ $frontMatterAiTranslatedFlag false
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 ---
 # title: More thoughts about performance

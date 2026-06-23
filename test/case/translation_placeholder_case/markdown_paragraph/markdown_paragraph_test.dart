@@ -10,19 +10,19 @@ void main() {
     test('Markdown 段落基础 1', () {
       const testCase = CaseMarkdownParagraph1();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
 
     test('Markdown 段落基础 2 - 跳过翻译、补充翻译', () {
       const testCase = CaseMarkdownParagraph2();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
 
     test('Markdown 段落基础 3 - 冒号（`:`）转为换行（`<br>`）', () {
       const testCase = CaseMarkdownParagraph3();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
   });
 }

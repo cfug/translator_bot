@@ -18,7 +18,7 @@ class CaseHtmlTagTab1 implements Case {
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 <!-- <Tab name="Title"> -->
 <Tab name="${MockUuid.translationChunkId}">

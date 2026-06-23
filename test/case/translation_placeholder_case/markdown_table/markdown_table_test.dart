@@ -9,13 +9,13 @@ void main() {
     test('Markdown 表格基础 1', () {
       const testCase = CaseMarkdownTable1();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
 
     test('Markdown 表格基础 2 - 跳过翻译', () {
       const testCase = CaseMarkdownTable2();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
   });
 }

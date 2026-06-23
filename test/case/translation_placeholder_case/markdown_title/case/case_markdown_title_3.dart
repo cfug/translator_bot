@@ -20,7 +20,7 @@ class CaseMarkdownTitle3 implements Case {
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 ## API
 

@@ -33,20 +33,46 @@ class FrontMatterChunker extends PlaceholderChunker {
     String? currentMetadataLineName;
     var currentMetadataLineValue = <String>[];
 
+    /// 当前目标属性所在行的缩进，用于按缩进识别其多行块值的续行
+    var currentMetadataIndent = 0;
+
     /// 已出现的 `# <字段>:` 注释行所属字段名，
     /// 其后的同名字段是已译槽，应原样保留
     final commentedFields = <String>{};
 
+    /// 结算当前目标属性：登记翻译块、写入占位行，随后清理标注
+    void flushMetadata() {
+      if (currentMetadataLineName == null) return;
+      final translationChunkId = context.addChunk(
+        currentMetadataLineValue.join(''),
+      );
+      context.addLine('$currentMetadataLineName: $translationChunkId');
+      currentMetadataLineName = null;
+      currentMetadataLineValue = [];
+    }
+
     /// 按行处理
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
-      final lineNext = i == lines.length - 1 ? null : lines[i + 1];
 
       /// 顶部元数据 - 开始
       if (i == 0 && line.trim() == '---') {
         context.addLine(line);
         continue;
       }
+
+      /// 多行块值的续行：在识别某目标属性期间，
+      /// 缩进比该属性更深的行都属于其块值（如 `>-`/`>` 折叠块）。
+      if (currentMetadataLineName != null &&
+          line.trim() != '---' &&
+          context.indentCount(line) > currentMetadataIndent) {
+        context.addLine('# $line');
+        currentMetadataLineValue.add(line.trim());
+        continue;
+      }
+
+      /// 当前行不再属于上一目标属性的块值，先结算它
+      flushMetadata();
 
       /// 顶部元数据 - 结束
       if (i != 0 && line.trim() == '---') {
@@ -92,8 +118,9 @@ class FrontMatterChunker extends PlaceholderChunker {
           /// 注释行
           context.addLine('# $line');
 
-          /// 标注当前行
+          /// 标注当前行（记录缩进，供其后续行按缩进归并）
           currentMetadataLineName = metadataName;
+          currentMetadataIndent = context.indentCount(line);
           if (metadataValue.startsWith('>-')) {
             currentMetadataLineValue.add(metadataValue.substring(2));
           } else if (metadataValue.startsWith('>')) {
@@ -105,31 +132,13 @@ class FrontMatterChunker extends PlaceholderChunker {
           context.addLine(line);
         }
       } else {
-        /// 当前行不存在属性，表明为当前（未译）目标属性的续行（比如 `description` 的多行值）
-        if (currentMetadataLineName != null) {
-          /// 注释行
-          context.addLine('# $line');
-          currentMetadataLineValue.add(line.trim());
-        } else {
-          context.addLine(line);
-        }
-      }
-
-      /// 下一行是否为新属性/已结束，如果是就代表需要翻译处理当前属性内容
-      final lineNextHasField = (lineNext?.indexOf(':') ?? -1) >= 0;
-      if ((lineNextHasField || lineNext?.trim() == '---') &&
-          currentMetadataLineName != null) {
-        /// 当前已存在属性，进行翻译块 ID 占位
-        final translationChunkId = context.addChunk(
-          currentMetadataLineValue.join(''),
-        );
-        context.addLine('$currentMetadataLineName: $translationChunkId');
-
-        /// 清理标注
-        currentMetadataLineName = null;
-        currentMetadataLineValue = [];
+        /// 既非块值续行（已在上方按缩进归并），又无字段冒号的孤立行，原样保留
+        context.addLine(line);
       }
     }
+
+    /// 兜底：元数据未以 `---` 正常闭合时，结算遗留的目标属性
+    flushMetadata();
 
     return true;
   }

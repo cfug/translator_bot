@@ -84,7 +84,7 @@ class CaseMarkdownListItem2 implements Case {
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 - Demo 1
 

@@ -15,7 +15,7 @@ class CaseLiquidTab2 implements Case {
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 {% tab "标题" %}
 

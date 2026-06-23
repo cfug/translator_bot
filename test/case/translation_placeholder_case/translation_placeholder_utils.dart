@@ -1,3 +1,4 @@
+import 'package:cfug_translator_bot/src/services/translation_service/models/translation_chunk_model.dart';
 import 'package:cfug_translator_bot/src/services/translation_service/reformat_text/reformat_text.dart';
 import 'package:cfug_translator_bot/src/services/translation_service/text_structure_parser/text_structure_parser.dart';
 import 'package:cfug_translator_bot/src/services/translation_service/translation_placeholder/translation_placeholder.dart';
@@ -30,4 +31,26 @@ String getPlaceholderOriginalLines(Case testCase) {
       .join('\n');
 
   return placeholderOriginalLines;
+}
+
+/// 获取 - 译文 ID 占位的数据
+///
+/// - [testCase] 需要获取的 Case
+///
+/// @return  译文 ID 占位的数据
+List<TranslationChunk> getPlaceholderData(Case testCase) {
+  final testText = testCase.testText();
+
+  /// 预处理文本
+  final content = ReformatText().run(testText);
+
+  /// 解析文本结构
+  final parser = TextStructureParser();
+  final structures = parser.parse(content);
+
+  /// 处理译文占位 ID
+  final translationPlaceholder = TranslationPlaceholder(MockUuid())
+    ..execute(structures);
+
+  return translationPlaceholder.translationPlaceholderData;
 }

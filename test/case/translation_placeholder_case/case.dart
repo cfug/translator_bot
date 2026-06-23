@@ -1,7 +1,7 @@
-abstract class Case {
+abstract class Case<T> {
   /// 测试文本
   String testText();
 
-  /// 预期文本
-  String expectText();
+  /// 预期
+  T expect();
 }

@@ -23,7 +23,7 @@ TextTextTextText
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 <!-- :::note Title -->
 :::note ${MockUuid.translationChunkId}

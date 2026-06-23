@@ -8,7 +8,7 @@ void main() {
     test('HTML 标签 <Tab name="标题"> 语法基础 1', () {
       const testCase = CaseHtmlTagTab1();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
   });
 }

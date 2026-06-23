@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.14
+
+- Fix the multi-line text in front matter and indented list items.
+
 ## 0.0.13
 
 - Rename `TopMetadata` to `FrontMatter`.

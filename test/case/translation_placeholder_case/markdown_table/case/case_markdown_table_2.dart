@@ -16,7 +16,7 @@ class CaseMarkdownTable2 implements Case {
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 | <t>Title</t><t>测试</t> | Title |
 | --- | --- |

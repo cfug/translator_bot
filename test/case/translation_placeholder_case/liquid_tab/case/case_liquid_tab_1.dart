@@ -13,7 +13,7 @@ class CaseLiquidTab1 implements Case {
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 <!-- {% tab "Title" %} -->
 {% tab "${MockUuid.translationChunkId}" %}

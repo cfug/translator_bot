@@ -11,25 +11,25 @@ void main() {
     test('顶部元数据基础 1', () {
       const testCase = CaseFrontMatter1();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
 
     test('顶部元数据基础 2 - 已存在 AI 翻译标记', () {
       const testCase = CaseFrontMatter2();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
 
     test('顶部元数据基础 3 - 块内补充翻译', () {
       const testCase = CaseFrontMatter3();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
 
     test('顶部元数据带列表项 1', () {
       const testCase = CaseFrontMatterListItem1();
       final result = getPlaceholderOriginalLines(testCase);
-      expect(result, testCase.expectText());
+      expect(result, testCase.expect());
     });
   });
 }

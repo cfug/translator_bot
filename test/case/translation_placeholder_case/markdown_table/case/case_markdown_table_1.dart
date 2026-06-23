@@ -16,7 +16,7 @@ class CaseMarkdownTable1 implements Case {
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 |<t>Title</t><t>${MockUuid.translationChunkId}</t>|<t>Title</t><t>${MockUuid.translationChunkId}</t>|
 | --- | --- |

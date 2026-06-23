@@ -60,7 +60,7 @@ xxx
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 <!-- ${TextStructureType.htmlComment} -->
 <!-- xxx -->

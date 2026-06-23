@@ -19,7 +19,7 @@ What is performance, and why is performance important 2
   }
 
   @override
-  String expectText() {
+  String expect() {
     return '''
 More thoughts about performance 1
 What is performance, and why is performance important 1
