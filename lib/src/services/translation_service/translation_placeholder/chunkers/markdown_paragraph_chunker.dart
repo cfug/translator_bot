@@ -1,4 +1,5 @@
 import '../../enum.dart';
+import '../../models/translation_chunk_model.dart';
 import '../placeholder_chunker.dart';
 
 /// Markdown 段落占位处理器
@@ -29,6 +30,7 @@ class MarkdownParagraphChunker extends PlaceholderChunker {
       final translationChunkId = context.addChunk(
         content,
         indentCount: context.indentCount(lines[0]),
+        omitMode: OmitMode.dropLine,
       );
       context.addLine('');
       context.addLine(translationChunkId);

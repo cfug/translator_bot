@@ -1,3 +1,32 @@
+import '../placeholder_translator/translation_applier.dart';
+
+/// 译文与原文相同时的占位省略策略
+///
+/// 在回填阶段（[TranslationApplier]），若某占位块的译文等于原文，
+/// 按此策略决定如何省略其回填，避免产生 “原文 + 完全相同译文” 的重复。
+enum OmitMode {
+  /// 不省略，照常回填（默认）
+  ///
+  /// 适用于原文被注释、占位行是唯一有效行的结构
+  /// （front matter / aside `:::` / liquid tab / html tab 等）
+  /// 这些结构跳过回填会直接删掉字段/标签，且本就不产生可见重复。
+  never,
+
+  /// 整行占位删除
+  ///
+  /// 适用于 “原文行保留 + 下方另起译文行” 的结构（段落 / 列表项 / 标题 等），
+  /// 以及表体译文行（整行表格所有占位都与原文相同时整行删除）。
+  /// 删除占位行的同时，删除其上方那一空行。
+  dropLine,
+
+  /// 表头单元格收敛
+  ///
+  /// 把 `<t>原文</t><t>占位</t>` 收敛为 `<t>原文</t>`（仅删译文 `<t>` 段）。
+  ///
+  /// TODO(Amos)：属于独立处理的业务逻辑，暂时一同处理，后续如果出现更多其他场景可考虑迁移为独立处理。
+  collapseTableCell,
+}
+
 /// 翻译块数据
 class TranslationChunk {
   /// 翻译块数据
@@ -5,6 +34,7 @@ class TranslationChunk {
     required this.id,
     required this.indentCount,
     required this.text,
+    this.omitMode = OmitMode.never,
   });
 
   factory TranslationChunk.fromJson(Map<String, dynamic> json) {
@@ -39,15 +69,28 @@ class TranslationChunk {
   /// 内容（需要翻译、已翻译）
   final String text;
 
+  /// 译文与原文相同时的占位省略策略
+  ///
+  /// 仅在原文块上有意义（由占位 chunker 按结构标注），
+  /// AI 返回的译文块默认为 [OmitMode.never]。
+  /// 属于流水线内存数据，不参与 [TranslationChunk.fromJson] / [toJson] 的 AI 格式。
+  final OmitMode omitMode;
+
   Map<String, dynamic> toJson() {
     return {'id': id, 'indentCount': indentCount, 'text': text};
   }
 
-  TranslationChunk copyWith({String? id, String? text, int? indentCount}) {
+  TranslationChunk copyWith({
+    String? id,
+    String? text,
+    int? indentCount,
+    OmitMode? omitMode,
+  }) {
     return TranslationChunk(
       id: id ?? this.id,
       indentCount: indentCount ?? this.indentCount,
       text: text ?? this.text,
+      omitMode: omitMode ?? this.omitMode,
     );
   }
 
@@ -57,6 +100,7 @@ class TranslationChunk {
       '  id: $id,\n'
       '  indentCount: $indentCount,\n'
       '  text: $text,\n'
+      '  omitMode: $omitMode,\n'
       ')';
 
   @override
@@ -66,8 +110,9 @@ class TranslationChunk {
           runtimeType == other.runtimeType &&
           id == other.id &&
           indentCount == other.indentCount &&
-          text == other.text;
+          text == other.text &&
+          omitMode == other.omitMode;
 
   @override
-  int get hashCode => Object.hashAll([id, indentCount, text]);
+  int get hashCode => Object.hashAll([id, indentCount, text, omitMode]);
 }

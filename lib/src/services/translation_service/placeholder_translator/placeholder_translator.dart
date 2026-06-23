@@ -75,6 +75,10 @@ class PlaceholderTranslator {
     }
 
     /// 应用翻译结果
-    return _applier.apply(placeholderOriginalLines, translatedPlaceholderList);
+    return _applier.apply(
+      placeholderOriginalLines,
+      translatedPlaceholderList,
+      originalPlaceholderData: translationPlaceholderData,
+    );
   }
 }

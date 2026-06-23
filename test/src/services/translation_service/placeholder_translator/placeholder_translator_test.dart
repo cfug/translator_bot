@@ -59,5 +59,27 @@ void main() {
         throwsA(isA<TranslationException>()),
       );
     });
+
+    test('原文标注 dropLine 且译文==原文时跳过回填（删占位行）', () async {
+      final translator = PlaceholderTranslator(
+        translateBatch: (input) async => const [
+          TranslationChunk(id: 'ID-1', indentCount: 0, text: 'iOS'),
+        ],
+        onProgress: (_) {},
+      );
+
+      final result = await translator.translate(
+        ['## iOS', '', '## ID-1'],
+        const [
+          TranslationChunk(
+            id: 'ID-1',
+            indentCount: 0,
+            text: 'iOS',
+            omitMode: OmitMode.dropLine,
+          ),
+        ],
+      );
+      expect(result, '## iOS');
+    });
   });
 }

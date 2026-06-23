@@ -1,4 +1,5 @@
 import '../../enum.dart';
+import '../../models/translation_chunk_model.dart';
 import '../placeholder_chunker.dart';
 
 /// Markdown 列表项占位处理器
@@ -39,6 +40,7 @@ class MarkdownListItemChunker extends PlaceholderChunker {
         final translationChunkId = context.addChunk(
           content,
           indentCount: indentCount,
+          omitMode: OmitMode.dropLine,
         );
         context.addLine('');
         context.addLine(translationChunkId);

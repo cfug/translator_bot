@@ -1,4 +1,5 @@
 import '../../enum.dart';
+import '../../models/translation_chunk_model.dart';
 import '../../text_structure_parser/models/text_structure_model.dart';
 import '../placeholder_chunker.dart';
 
@@ -67,7 +68,10 @@ class MarkdownTitleChunker extends PlaceholderChunker {
     if (isAlreadyTranslated || isTranslationCopy) return true;
 
     /// 添加翻译块 ID 占位
-    final translationChunkId = context.addChunk(titleText);
+    final translationChunkId = context.addChunk(
+      titleText,
+      omitMode: OmitMode.dropLine,
+    );
     context.addLine('');
     context.addLine('$titlePrefix $translationChunkId');
 

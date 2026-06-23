@@ -1,4 +1,5 @@
 import '../../enum.dart';
+import '../../models/translation_chunk_model.dart';
 import '../placeholder_chunker.dart';
 
 /// Markdown 表格占位处理器
@@ -23,7 +24,10 @@ class MarkdownTableChunker extends PlaceholderChunker {
             final cellTrim = cell.trim();
             if (cellTrim != '') {
               /// 添加翻译块 ID 占位
-              final translationChunkId = context.addChunk(cellTrim);
+              final translationChunkId = context.addChunk(
+                cellTrim,
+                omitMode: OmitMode.collapseTableCell,
+              );
               return '<t>$cellTrim</t><t>$translationChunkId</t>';
             } else {
               return cell;
@@ -48,7 +52,10 @@ class MarkdownTableChunker extends PlaceholderChunker {
 
               if (cellTrim != '') {
                 /// 添加翻译块 ID 占位
-                final translationChunkId = context.addChunk(cellTrim);
+                final translationChunkId = context.addChunk(
+                  cellTrim,
+                  omitMode: OmitMode.dropLine,
+                );
                 return translationChunkId;
               } else {
                 return cell;

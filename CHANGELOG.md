@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.15
+
+- Skip backfilling identical translations.
+
 ## 0.0.14
 
 - Fix the multi-line text in front matter and indented list items.

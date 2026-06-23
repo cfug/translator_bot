@@ -22,11 +22,13 @@ class CaseMarkdownListItemIndent implements Case {
         id: MockUuid.translationChunkId,
         indentCount: 8,
         text: 'Demo 1\n',
+        omitMode: OmitMode.dropLine,
       ),
       TranslationChunk(
         id: MockUuid.translationChunkId,
         indentCount: 8,
         text: 'Demo 2\n',
+        omitMode: OmitMode.dropLine,
       ),
     ];
   }

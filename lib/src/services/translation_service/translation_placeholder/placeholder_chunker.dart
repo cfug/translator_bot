@@ -71,12 +71,22 @@ class PlaceholderContext {
   ///
   /// - [text] 需要翻译的内容
   /// - [indentCount] 缩进计数
+  /// - [omitMode] 译文与原文相同时的占位省略策略（默认 [OmitMode.never]）
   ///
   /// @return 生成的译文块 ID
-  String addChunk(String text, {int indentCount = 0}) {
+  String addChunk(
+    String text, {
+    int indentCount = 0,
+    OmitMode omitMode = OmitMode.never,
+  }) {
     final id = chunkId();
     translationPlaceholderData.add(
-      TranslationChunk(id: id, indentCount: indentCount, text: text),
+      TranslationChunk(
+        id: id,
+        indentCount: indentCount,
+        text: text,
+        omitMode: omitMode,
+      ),
     );
     return id;
   }
