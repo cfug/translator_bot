@@ -1,6 +1,6 @@
 name: cfug_translator_bot
 description:
-version: 0.0.15
+version: 0.0.16
 
 publish_to: none
 
@@ -8,6 +8,7 @@ environment:
   sdk: '>=3.11.0 <4.0.0'
 
 dependencies:
+  path: 1.9.1
   args: 2.7.0
   uuid: 4.5.3
   github: 9.25.1

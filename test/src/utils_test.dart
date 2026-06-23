@@ -54,4 +54,69 @@ void main() {
       expect(Utils.isTranslated('一二abcdefghijklmnopqr'), isTrue);
     });
   });
+
+  group('Utils.normalizeRepoPath ::', () {
+    test('反斜杠路径转为 POSIX 风格', () {
+      expect(
+        Utils.normalizeRepoPath(
+          r'.\sites\docs\src\content\packages-and-plugins\developing-packages.md',
+        ),
+        'sites/docs/src/content/packages-and-plugins/developing-packages.md',
+      );
+    });
+
+    test('去掉 ./ 前缀', () {
+      expect(Utils.normalizeRepoPath('./sites/docs/a.md'), 'sites/docs/a.md');
+    });
+
+    test('折叠重复斜杠（正斜杠与反斜杠）', () {
+      expect(Utils.normalizeRepoPath('sites//docs/a.md'), 'sites/docs/a.md');
+      expect(Utils.normalizeRepoPath(r'sites\\docs\\a.md'), 'sites/docs/a.md');
+    });
+
+    test('去掉开头的 /', () {
+      expect(Utils.normalizeRepoPath('/sites/docs/a.md'), 'sites/docs/a.md');
+    });
+
+    test('去掉末尾的 /', () {
+      expect(Utils.normalizeRepoPath('./sites/docs/'), 'sites/docs');
+    });
+
+    test('解析 .. 段', () {
+      expect(Utils.normalizeRepoPath('sites/docs/../a.md'), 'sites/a.md');
+    });
+
+    test('忽略首尾空白', () {
+      expect(Utils.normalizeRepoPath('  ./sites/a.md  '), 'sites/a.md');
+    });
+
+    test('根目录文件原样保留', () {
+      expect(Utils.normalizeRepoPath('readme.md'), 'readme.md');
+    });
+
+    test('隐藏文件（点开头）不被误处理', () {
+      expect(Utils.normalizeRepoPath('.gitignore'), '.gitignore');
+      expect(
+        Utils.normalizeRepoPath(r'.\sites\.gitignore'),
+        'sites/.gitignore',
+      );
+    });
+
+    group('无效路径返回空字符串', () {
+      test('空与纯空白', () {
+        expect(Utils.normalizeRepoPath(''), '');
+        expect(Utils.normalizeRepoPath('   '), '');
+      });
+
+      test('当前目录 . 与根 /', () {
+        expect(Utils.normalizeRepoPath('.'), '');
+        expect(Utils.normalizeRepoPath('/'), '');
+      });
+
+      test('越出仓库根的 ..', () {
+        expect(Utils.normalizeRepoPath('../secret'), '');
+        expect(Utils.normalizeRepoPath('sites/../../x'), '');
+      });
+    });
+  });
 }

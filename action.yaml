@@ -98,6 +98,12 @@ runs:
         GEMINI_API_KEY: ${{ inputs.gemini_api_key }}
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
         OPENAI_BASE_URL: ${{ inputs.openai_base_url }}
+        MODEL: ${{ inputs.model }}
+        REPOSITORY: ${{ github.repository }}
+        ACTION_ID: ${{ github.run_id }}
+        ISSUE_ID: ${{ github.event.issue.number }}
+        COMMENT_ID: ${{ github.event.comment.id }}
+        FILE_PATH: ${{ steps.extract-comment.outputs.file_path }}
       run: |
-        dart ${{ github.action_path }}/bin/translator.dart --model ${{ inputs.model }} --repository ${{ github.repository }} --actionId ${{ github.run_id }} --issueId ${{ github.event.issue.number }} --commentId ${{ github.event.comment.id }} --filePath ${{ steps.extract-comment.outputs.file_path }}
+        dart "${{ github.action_path }}/bin/translator.dart" --model "$MODEL" --repository "$REPOSITORY" --actionId "$ACTION_ID" --issueId "$ISSUE_ID" --commentId "$COMMENT_ID" --filePath "$FILE_PATH"
       shell: bash

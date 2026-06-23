@@ -1,3 +1,5 @@
+import 'package:path/path.dart' as p;
+
 abstract final class Utils {
   /// 是否包含中文字符（含任意一个即为真）
   static bool hasChinese(String content) => _hanRegExp.hasMatch(content);
@@ -31,6 +33,24 @@ abstract final class Utils {
 
   static final RegExp _hanRegExp = RegExp(r'[\u4e00-\u9fa5]');
   static final RegExp _latinRegExp = RegExp(r'[a-zA-Z]');
+
+  /// 将用户输入的文件路径处理为干净的 “仓库相对” POSIX 路径。
+  ///
+  /// 无意义的路径统一返回空字符串。
+  static String normalizeRepoPath(String input) {
+    // posix context 不会把 `\` 当作分隔符，需先统一为 `/`
+    final unified = input.trim().replaceAll('\\', '/');
+    final normalized = p.posix.normalize(unified);
+    // 无意义或越出仓库根的路径一律视为无效
+    if (normalized == '.' ||
+        normalized == '..' ||
+        normalized.isEmpty ||
+        normalized.startsWith('../')) {
+      return '';
+    }
+    // 去掉开头的 `/`，统一为不带前缀的仓库相对路径
+    return normalized.replaceFirst(RegExp(r'^/+'), '');
+  }
 
   static const emojiGap = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 }

@@ -256,10 +256,7 @@ class Translator {
     String? actualfilePath;
 
     /// 格式化文件路径
-    final formatfilePath = filePath
-        .trim()
-        .replaceAll('\\', '/')
-        .replaceFirstMapped(RegExp(r'^(\s*)(\/|\.\/)?'), (_) => './');
+    final formatfilePath = Utils.normalizeRepoPath(filePath);
     final filePathValue = formatfilePath.split('/');
     final filePathLastValue = filePathValue.last;
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.16
+
+- Fix the file path.
+
 ## 0.0.15
 
 - Skip backfilling identical translations.
