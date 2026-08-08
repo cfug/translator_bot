@@ -80,7 +80,7 @@ runs:
           }
 
     - if: steps.entry.outputs.valid == 'true' && steps.extract-comment.outputs.valid == 'true'
-      uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+      uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1
       with:
         sdk: '3.11'
     - name: Prepare dependencies
